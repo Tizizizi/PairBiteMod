@@ -1,28 +1,78 @@
 const app = getApp()
 
+const DEFAULT_AVATAR = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+
 Page({
   data: {
     greeting: '你好',
-    partnerName: '荔荔',
+    userName: '',
+    userAvatar: '',
+    partnerName: '',
+    partnerAvatar: '',
+    bindDays: 0,
     todayOrder: null,
     dishCount: 0,
     orderCount: 0,
     togetherDays: 0,
-    openid: '',
+    isBound: false,
+    // 头像昵称设置弹窗
+    showProfileModal: false,
+    tempAvatarUrl: '',
+    tempNickname: '',
   },
 
-  onLoad() {
+  onLoad(options) {
     this.setGreeting()
+    // 如果携带了邀请码参数（从分享链接进入）
+    if (options.inviteCode) {
+      app.globalData.pendingInviteCode = options.inviteCode
+    }
   },
 
   async onShow() {
-    await this.getOpenId()
-    this.loadTodayOrder()
-    this.loadStats()
-    // 显示自己的名字
-    const openid = this.data.openid
-    const myName = openid === app.globalData._openidA ? app.globalData.userA : app.globalData.userB
-    this.setData({ partnerName: myName })
+    // 每次进入首页都强制刷新用户信息，确保绑定状态及时更新
+    await app.loadUserInfo(true)
+    await this.loadUserInfo()
+    app.setKitchenTitle()
+  },
+
+  // 加载用户信息
+  async loadUserInfo() {
+    const { currentUser, partner } = await app.loadUserInfo()
+    const isBound = app.isBound()
+
+    // 计算绑定天数
+    let bindDays = 0
+    if (isBound && currentUser?.bindTime) {
+      const bindTime = new Date(currentUser.bindTime)
+      const now = new Date()
+      bindDays = Math.floor((now - bindTime) / (1000 * 60 * 60 * 24)) + 1
+    }
+
+    this.setData({
+      userName: currentUser?.nickname || '',
+      userAvatar: currentUser?.avatarUrl || '',
+      partnerName: partner?.nickname || '',
+      partnerAvatar: partner?.avatarUrl || '',
+      bindDays,
+      isBound
+    })
+
+    // 如果没有设置头像昵称，强制弹窗
+    if (!currentUser?.nickname || !currentUser?.avatarUrl) {
+      this.setData({
+        showProfileModal: true,
+        tempNickname: currentUser?.nickname || '',
+        tempAvatarUrl: currentUser?.avatarUrl || ''
+      })
+      return
+    }
+
+    // 已设置头像昵称，加载其他数据
+    if (isBound) {
+      this.loadTodayOrder()
+      this.loadStats()
+    }
   },
 
   // 设置问候语
@@ -39,39 +89,107 @@ Page({
     this.setData({ greeting })
   },
 
-  // 获取用户openid
-  async getOpenId() {
+  // 选择头像回调
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail
+    this.setData({ tempAvatarUrl: avatarUrl })
+  },
+
+  // 昵称输入回调
+  onNicknameInput(e) {
+    this.setData({ tempNickname: e.detail.value })
+  },
+
+  // 保存头像昵称
+  async saveProfile() {
+    const { tempNickname, tempAvatarUrl } = this.data
+
+    if (!tempNickname.trim()) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' })
+      return
+    }
+
+    if (!tempAvatarUrl) {
+      wx.showToast({ title: '请选择头像', icon: 'none' })
+      return
+    }
+
+    wx.showLoading({ title: '保存中...', mask: true })
+
     try {
-      const res = await wx.cloud.callFunction({ name: 'getOpenId' })
-      const openid = res.result?.openid || ''
-      this.setData({ openid })
+      let finalAvatarUrl = tempAvatarUrl
+
+      // 如果是临时头像，上传到云存储
+      if (tempAvatarUrl.startsWith('http://tmp') || tempAvatarUrl.startsWith('wxfile://')) {
+        const cloudPath = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+        const uploadRes = await wx.cloud.uploadFile({
+          cloudPath,
+          filePath: tempAvatarUrl
+        })
+        finalAvatarUrl = uploadRes.fileID
+      }
+
+      // 调用云函数更新用户信息
+      const res = await wx.cloud.callFunction({
+        name: 'createUser',
+        data: {
+          nickname: tempNickname.trim(),
+          avatarUrl: finalAvatarUrl
+        }
+      })
+
+      wx.hideLoading()
+
+      if (res.result?.success) {
+        this.setData({
+          showProfileModal: false,
+          userName: tempNickname.trim(),
+          userAvatar: finalAvatarUrl
+        })
+        // 刷新全局用户信息
+        await app.loadUserInfo(true)
+        wx.showToast({ title: '设置成功', icon: 'success' })
+
+        // 如果有待绑定的邀请码，跳转到绑定页
+        if (app.globalData.pendingInviteCode) {
+          setTimeout(() => {
+            wx.navigateTo({ url: '/pages/Bind/index' })
+          }, 500)
+        }
+      } else {
+        wx.showToast({ title: '保存失败', icon: 'none' })
+      }
     } catch (e) {
-      console.error('获取openid失败', e)
+      wx.hideLoading()
+      console.error('save profile error', e)
+      wx.showToast({ title: '保存失败', icon: 'none' })
     }
   },
+
+  // 阻止弹窗关闭
+  preventClose() {},
 
   // 加载今日点菜
   async loadTodayOrder() {
     try {
-      const db = await app.database()
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionOrderList,
+          todayOnly: true,
+          orderBy: 'createTime',
+          order: 'desc',
+          limit: 1
+        }
+      })
 
-      const res = await db.collection(app.globalData.collectionOrderList)
-        .where({
-          createTime: db.command.gte(today)
-        })
-        .orderBy('createTime', 'desc')
-        .limit(1)
-        .get()
-
-      if (res.data.length > 0) {
-        const order = res.data[0]
-        const isMe = order._openid === this.data.openid
+      if (res.result?.success && res.result.data?.length > 0) {
+        const order = res.result.data[0]
+        const creatorName = app.getDisplayName(order._openid)
         this.setData({
           todayOrder: {
             ...order,
-            creatorName: isMe ? '你' : app.getPartnerName(this.data.openid),
+            creatorName,
             timeText: this.formatTime(order.createTime)
           }
         })
@@ -79,27 +197,31 @@ Page({
         this.setData({ todayOrder: null })
       }
     } catch (e) {
-      console.error('加载今日点菜失败', e)
+      console.error('load today order error', e)
     }
   },
 
   // 加载统计数据
   async loadStats() {
     try {
-      const db = await app.database()
-
-      // 菜品数量
-      const dishRes = await db.collection(app.globalData.collectionDishList).count()
-      // 点菜次数
-      const orderRes = await db.collection(app.globalData.collectionOrderList).count()
+      const [dishRes, orderRes] = await Promise.all([
+        wx.cloud.callFunction({
+          name: 'getCoupleData',
+          data: { collection: app.globalData.collectionDishList, countOnly: true }
+        }),
+        wx.cloud.callFunction({
+          name: 'getCoupleData',
+          data: { collection: app.globalData.collectionOrderList, countOnly: true }
+        })
+      ])
 
       this.setData({
-        dishCount: dishRes.total,
-        orderCount: orderRes.total,
-        togetherDays: orderRes.total > 0 ? Math.max(1, orderRes.total) : 0
+        dishCount: dishRes.result?.total || 0,
+        orderCount: orderRes.result?.total || 0,
+        togetherDays: (orderRes.result?.total || 0) > 0 ? Math.max(1, orderRes.result.total) : 0
       })
     } catch (e) {
-      console.error('加载统计失败', e)
+      console.error('load stats error', e)
     }
   },
 
@@ -112,10 +234,20 @@ Page({
     return `${hours}:${minutes}`
   },
 
+  // 检查绑定状态，未绑定则跳转
+  checkBindAndGo(targetUrl) {
+    if (!this.data.isBound) {
+      wx.navigateTo({ url: '/pages/Bind/index' })
+      return false
+    }
+    return true
+  },
+
   // 订阅消息
   async requestSubscribeMessage() {
-    const templateId = 'lFy-3Kj2HTuid-KZDiBQMpKppVHAQsy7G3KargWX1GY'
+    if (!this.checkBindAndGo()) return
 
+    const templateId = 'lFy-3Kj2HTuid-KZDiBQMpKppVHAQsy7G3KargWX1GY'
     wx.requestSubscribeMessage({
       tmplIds: [templateId],
       success: (res) => {
@@ -126,7 +258,7 @@ Page({
         }
       },
       fail: (err) => {
-        console.error('订阅失败', err)
+        console.error('subscribe error', err)
         wx.showToast({ title: '请先申请消息模板', icon: 'none' })
       }
     })
@@ -134,16 +266,54 @@ Page({
 
   // 跳转到点菜页
   goToOrder() {
+    if (!this.checkBindAndGo()) return
     wx.switchTab({ url: '/pages/Order/index' })
   },
 
   // 跳转到菜品库
   goToDishes() {
+    if (!this.checkBindAndGo()) return
     wx.switchTab({ url: '/pages/Dishes/index' })
   },
 
   // 跳转到历史
   goToHistory() {
+    if (!this.checkBindAndGo()) return
     wx.switchTab({ url: '/pages/OrderHistory/index' })
+  },
+
+  // 跳转到最近点菜记录
+  async goToRecentOrder() {
+    if (!this.checkBindAndGo()) return
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionOrderList,
+          orderBy: 'createTime',
+          order: 'desc',
+          limit: 1
+        }
+      })
+      if (res.result?.success && res.result.data?.length > 0) {
+        const order = res.result.data[0]
+        wx.navigateTo({ url: `/pages/OrderDetail/index?id=${order._id}` })
+      } else {
+        wx.switchTab({ url: '/pages/OrderHistory/index' })
+      }
+    } catch (e) {
+      console.error('goToRecentOrder error', e)
+      wx.switchTab({ url: '/pages/OrderHistory/index' })
+    }
+  },
+
+  // 跳转到绑定页
+  goToBind() {
+    wx.navigateTo({ url: '/pages/Bind/index' })
+  },
+
+  // 跳转到设置页
+  goToSettings() {
+    wx.navigateTo({ url: '/pages/Settings/index' })
   },
 })

@@ -1,0 +1,517 @@
+/* 自定义导航栏 */
+.custom-nav {
+  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 20rpx;
+}
+
+.nav-back {
+  width: 80rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-icon {
+  font-size: 48rpx;
+  color: white;
+  font-weight: 300;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: white;
+}
+
+.nav-placeholder {
+  width: 80rpx;
+}
+
+.container {
+  min-height: 100vh;
+  background: #F5F9F0;
+  padding-bottom: 60rpx;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300rpx;
+  color: #999;
+}
+
+/* 页面头部 */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 40rpx 60rpx;
+  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+}
+
+.header-emoji {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.header-title {
+  font-size: 44rpx;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 12rpx;
+}
+
+.header-subtitle {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 分组 */
+.section {
+  padding: 30rpx 24rpx 0;
+}
+
+.section-title {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+  padding-left: 10rpx;
+}
+
+.card {
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(124, 179, 66, 0.08);
+}
+
+/* 个人资料项 */
+.profile-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 2rpx solid #F5F9F0;
+}
+
+.profile-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #F5F9F0;
+}
+
+.profile-info {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+.profile-name {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 信息项 */
+.info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx 24rpx;
+}
+
+.item-label {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.item-value-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.item-code {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #7CB342;
+  letter-spacing: 4rpx;
+  margin-right: 16rpx;
+}
+
+.copy-btn {
+  font-size: 24rpx;
+  color: white;
+  background: #7CB342;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+/* 分享按钮 */
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 24rpx 0 0;
+  height: 88rpx;
+  background: linear-gradient(135deg, #7CB342 0%, #8BC34A 100%);
+  color: white;
+  font-size: 32rpx;
+  border-radius: 44rpx;
+  border: none;
+}
+
+.share-btn::after {
+  display: none;
+}
+
+.share-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.tip-text {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  padding: 16rpx 10rpx 0;
+  text-align: center;
+}
+
+/* 已绑定状态 - 情侣头部 */
+.couple-header-bound {
+  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  padding: 80rpx 40rpx 60rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.couple-avatars {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.couple-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 140rpx;
+}
+
+.couple-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 6rpx solid white;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  background: #f5f5f5;
+}
+
+.couple-name {
+  font-size: 26rpx;
+  color: white;
+  margin-top: 12rpx;
+  max-width: 140rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+}
+
+.couple-heart-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 30rpx;
+  padding-top: 20rpx;
+}
+
+.couple-heart {
+  font-size: 56rpx;
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  60% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.couple-days {
+  font-size: 24rpx;
+  color: white;
+  margin-top: 8rpx;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.couple-slogan {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 30rpx;
+}
+
+/* 绑定信息卡片 */
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx 24rpx;
+  border-bottom: 2rpx solid #F5F9F0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 30rpx;
+  color: #666;
+}
+
+.info-value {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.info-value-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.info-code {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #7CB342;
+  letter-spacing: 4rpx;
+  margin-right: 12rpx;
+}
+
+.copy-icon {
+  font-size: 28rpx;
+}
+
+/* 解绑区域 */
+.unbind-section {
+  margin-top: 60rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.unbind-btn-light {
+  font-size: 28rpx;
+  color: #E57373;
+  padding: 20rpx 50rpx;
+  background: #FFF5F5;
+  border-radius: 40rpx;
+}
+
+.unbind-tip {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}
+
+/* 统计卡片 */
+.stats-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(124, 179, 66, 0.08);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #7CB342;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: #E8F5E9;
+}
+
+/* 小贴士卡片 */
+.tips-card {
+  background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E9 100%);
+  border-radius: 20rpx;
+  padding: 30rpx;
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.tips-icon {
+  font-size: 32rpx;
+  margin-right: 10rpx;
+}
+
+.tips-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #558B2F;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.tips-item {
+  font-size: 26rpx;
+  color: #689F38;
+  line-height: 1.6;
+}
+
+/* 信息行箭头 */
+.info-arrow {
+  font-size: 28rpx;
+  color: #ccc;
+  margin-left: 8rpx;
+}
+
+/* 弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 600rpx;
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 40rpx 30rpx 20rpx;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.modal-body {
+  padding: 20rpx 30rpx 30rpx;
+}
+
+.kitchen-name-input {
+  width: 100%;
+  height: 90rpx;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 32rpx;
+  text-align: center;
+}
+
+.input-tip {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+  margin-top: 16rpx;
+}
+
+.modal-footer {
+  display: flex;
+  border-top: 2rpx solid #f5f5f5;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 100rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32rpx;
+}
+
+.modal-btn.cancel {
+  color: #999;
+  border-right: 2rpx solid #f5f5f5;
+}
+
+.modal-btn.confirm {
+  color: #7CB342;
+  font-weight: 500;
+}
+
+/* 输入框 */
+.input-wrap {
+  padding: 30rpx 24rpx;
+}
+
+.code-input {
+  width: 100%;
+  height: 90rpx;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  font-size: 36rpx;
+  text-align: center;
+  letter-spacing: 8rpx;
+  text-transform: uppercase;
+}
+
+.bind-btn {
+  margin: 0 24rpx 30rpx;
+  height: 88rpx;
+  background: #E0E0E0;
+  color: #999;
+  font-size: 32rpx;
+  border-radius: 44rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bind-btn.active {
+  background: linear-gradient(135deg, #7CB342 0%, #8BC34A 100%);
+  color: white;
+}

@@ -7,7 +7,8 @@
     "pages/Order/index",
     "pages/OrderHistory/index",
     "pages/OrderDetail/index",
-    "pages/Settings/index"
+    "pages/Settings/index",
+    "pages/Bind/index"
   ],
   "window": {
     "backgroundColor": "#F5F9F0",

@@ -2,6 +2,7 @@ const app = getApp()
 
 Page({
   data: {
+    isBound: false,
     dishes: [],
     allDishes: [],
     categories: [],
@@ -28,38 +29,54 @@ Page({
     searchKey: '',
   },
 
-  async onShow() {
-    await this.getPartnerName()
-    await this.loadDishes()
+  onShow() {
+    // 信息不完整时跳回首页（首页会弹窗）
+    if (!app.isProfileComplete()) {
+      wx.switchTab({ url: '/pages/MainPage/index' })
+      return
+    }
+    const isBound = app.isBound()
+    this.setData({ isBound })
+    // 未绑定时跳转绑定页
+    if (!isBound) {
+      wx.navigateTo({ url: '/pages/Bind/index' })
+      return
+    }
+    app.setKitchenTitle()
+    this.loadPartnerName()
+    this.loadDishes()
   },
 
   // 获取伴侣名字
-  async getPartnerName() {
-    try {
-      const res = await wx.cloud.callFunction({ name: 'getOpenId' })
-      const openid = res.result?.openid || ''
-      const partnerName = app.getPartnerName(openid)
-      this.setData({ partnerName })
-    } catch (e) {
-      console.error('获取伴侣名字失败', e)
-    }
+  async loadPartnerName() {
+    await app.loadUserInfo()
+    const partnerName = app.getPartnerName()
+    this.setData({ partnerName })
   },
 
   // 加载菜品
   async loadDishes() {
     this.setData({ loading: true })
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionDishList)
-        .orderBy('createTime', 'desc')
-        .limit(100)
-        .get()
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          orderBy: 'createTime',
+          order: 'desc',
+          limit: 100
+        }
+      })
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+      const data = res.result.data
 
       // 检查是否有再来一单的菜品
       const reorderIds = app.globalData.reorderDishIds ? app.globalData.reorderDishIds.split(',') : []
       app.globalData.reorderDishIds = null
 
-      const dishes = res.data.map(item => ({
+      const dishes = data.map(item => ({
         ...item,
         selected: reorderIds.includes(item._id),
         category: item.category || 'meat'
@@ -364,11 +381,13 @@ Page({
     const { selectedDishes } = this.data
 
     this.setData({ submitting: true })
+    wx.showLoading({ title: '提交中...', mask: true })
 
     try {
       const db = await app.database()
 
-      // 保存点菜记录
+      // 保存点菜记录（带上 coupleId）
+      const coupleId = app.globalData.currentUser?.coupleId || ''
       await db.collection(app.globalData.collectionOrderList).add({
         data: {
           dishes: selectedDishes.map(item => ({
@@ -378,21 +397,28 @@ Page({
             category: item.category
           })),
           remark,
+          coupleId,
           createTime: db.serverDate(),
         }
       })
 
-      // 更新菜品点单次数
-      const _ = db.command
+      // 更新菜品点单次数（异步执行，不阻塞）
       for (const dish of selectedDishes) {
-        db.collection(app.globalData.collectionDishList).doc(dish._id).update({
-          data: { orderCount: _.inc(1) }
+        wx.cloud.callFunction({
+          name: 'updateCoupleData',
+          data: {
+            collection: app.globalData.collectionDishList,
+            docId: dish._id,
+            action: 'inc',
+            data: { orderCount: 1 }
+          }
         }).catch(() => {})
       }
 
       // 发送通知
       await this.sendNotification(selectedDishes, remark)
 
+      wx.hideLoading()
       // 显示成功弹窗
       this.setData({
         showSuccess: true,
@@ -400,6 +426,7 @@ Page({
       })
 
     } catch (e) {
+      wx.hideLoading()
       console.error('点菜失败', e)
       wx.showToast({ title: '点菜失败，请重试', icon: 'none' })
       this.setData({ submitting: false })

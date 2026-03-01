@@ -7,12 +7,8 @@ cloud.init({
 
 const db = cloud.database()
 
-// 配置：两个用户的openid
-const CONFIG = {
-  openidA: 'of98y3YO5xjP-jppRx4qe87U1pMA',  // 泡泡浴
-  openidB: 'of98y3c3p8_AduHK7Y2Vx5xtUgIM',  // 荔荔
-  templateId: 'lFy-3Kj2HTuid-KZDiBQMpKppVHAQsy7G3KargWX1GY'
-}
+// 订阅消息模板ID
+const TEMPLATE_ID = 'lFy-3Kj2HTuid-KZDiBQMpKppVHAQsy7G3KargWX1GY'
 
 // 云函数入口函数
 exports.main = async (event, context) => {
@@ -21,14 +17,17 @@ exports.main = async (event, context) => {
 
   const { type, dishNames, count, dishName, remark } = event
 
-  // 确定要通知的目标用户（对方）
+  // 从 User 集合查询当前用户的伴侣
   let targetOpenid
-  if (currentOpenid === CONFIG.openidA) {
-    targetOpenid = CONFIG.openidB
-  } else if (currentOpenid === CONFIG.openidB) {
-    targetOpenid = CONFIG.openidA
-  } else {
-    return { success: false, message: '未知用户' }
+  try {
+    const userRes = await db.collection('User').doc(currentOpenid).get()
+    if (!userRes.data || !userRes.data.partnerId) {
+      return { success: false, message: '未绑定伴侣' }
+    }
+    targetOpenid = userRes.data.partnerId
+  } catch (err) {
+    console.error('query user error', err)
+    return { success: false, message: '用户不存在' }
   }
 
   try {
@@ -38,7 +37,7 @@ exports.main = async (event, context) => {
     if (type === 'newOrder') {
       result = await cloud.openapi.subscribeMessage.send({
         touser: targetOpenid,
-        templateId: CONFIG.templateId,
+        templateId: TEMPLATE_ID,
         page: 'pages/OrderHistory/index',
         data: {
           time25: { value: formatTime(new Date()) },                    // 时间（精确到分钟）
@@ -50,7 +49,7 @@ exports.main = async (event, context) => {
     } else if (type === 'newDish') {
       result = await cloud.openapi.subscribeMessage.send({
         touser: targetOpenid,
-        templateId: CONFIG.templateId,
+        templateId: TEMPLATE_ID,
         page: 'pages/Dishes/index',
         data: {
           time25: { value: formatTime(new Date()) },                    // 时间

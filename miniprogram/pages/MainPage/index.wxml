@@ -1,17 +1,48 @@
 <view class="container">
-  <!-- 顶部欢迎区域 -->
-  <view class="welcome-section">
-    <view class="welcome-card">
-      <image class="avatar-image" src="/images/123.jpg" mode="aspectFit"></image>
+  <!-- 顶部区域：已绑定显示情侣卡片，未绑定显示欢迎卡片 -->
+  <view class="welcome-section {{isBound ? 'couple-mode' : ''}}">
+    <!-- 未绑定：原欢迎卡片 -->
+    <view wx:if="{{!isBound}}" class="welcome-card">
+      <image class="avatar-image" src="{{userAvatar || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}" mode="aspectFill" bindtap="goToSettings"></image>
       <view class="welcome-text">
-        <text class="greeting">{{greeting}}，{{partnerName}}！</text>
+        <text class="greeting">{{greeting}}，{{userName || '新朋友'}}！</text>
         <text class="sub-greeting">今天想吃点什么呀？</text>
+      </view>
+    </view>
+    <!-- 已绑定：情侣卡片 -->
+    <view wx:else class="couple-header" bindtap="goToBind">
+      <view class="couple-greeting">{{greeting}}，一起吃点什么？</view>
+      <view class="couple-avatars-top">
+        <view class="couple-avatar-item" catchtap="goToSettings">
+          <image class="couple-avatar-img" src="{{userAvatar}}" mode="aspectFill"></image>
+          <text class="couple-avatar-name">{{userName}}</text>
+        </view>
+        <view class="couple-heart-center">
+          <view class="couple-heart-beat">💕</view>
+          <text class="couple-days" wx:if="{{bindDays > 0}}">{{bindDays}}天</text>
+        </view>
+        <view class="couple-avatar-item">
+          <image class="couple-avatar-img" src="{{partnerAvatar}}" mode="aspectFill"></image>
+          <text class="couple-avatar-name">{{partnerName}}</text>
+        </view>
       </view>
     </view>
   </view>
 
+  <!-- 未绑定提示 -->
+  <view wx:if="{{!isBound && userName}}" class="bind-tip-section">
+    <view class="bind-tip-card" bindtap="goToBind">
+      <text class="bind-tip-icon">💕</text>
+      <view class="bind-tip-content">
+        <text class="bind-tip-title">还没有绑定另一半</text>
+        <text class="bind-tip-desc">点击邀请TA一起使用小厨房</text>
+      </view>
+      <text class="bind-tip-arrow">></text>
+    </view>
+  </view>
+
   <!-- 今日状态卡片 -->
-  <view class="status-section">
+  <view class="status-section" wx:if="{{isBound}}">
     <view class="section-title">🍽️ 今日点菜</view>
     <view class="status-card" wx:if="{{todayOrder}}">
       <view class="status-header">
@@ -31,21 +62,22 @@
     </view>
   </view>
 
+
   <!-- 快捷入口 -->
   <view class="quick-section">
     <view class="section-title">⚡ 快捷操作</view>
     <view class="quick-grid">
-      <view class="quick-item" bindtap="goToOrder">
-        <view class="quick-icon" style="background: #E8F5E9;">🍜</view>
-        <text class="quick-label">点菜</text>
+      <view class="quick-item" bindtap="goToSettings">
+        <view class="quick-icon" style="background: #E8F5E9;">👤</view>
+        <text class="quick-label">个人中心</text>
       </view>
-      <view class="quick-item" bindtap="goToDishes">
-        <view class="quick-icon" style="background: #FFF3E0;">📖</view>
-        <text class="quick-label">菜品库</text>
+      <view class="quick-item" bindtap="goToBind">
+        <view class="quick-icon" style="background: #E3F2FD;">💕</view>
+        <text class="quick-label">绑定关系</text>
       </view>
-      <view class="quick-item" bindtap="goToHistory">
-        <view class="quick-icon" style="background: #E3F2FD;">📋</view>
-        <text class="quick-label">历史</text>
+      <view class="quick-item" bindtap="goToRecentOrder">
+        <view class="quick-icon" style="background: #FFF3E0;">📋</view>
+        <text class="quick-label">最近点菜</text>
       </view>
       <view class="quick-item" bindtap="requestSubscribeMessage">
         <view class="quick-icon" style="background: #FCE4EC;">🔔</view>
@@ -55,7 +87,7 @@
   </view>
 
   <!-- 菜品统计 -->
-  <view class="stats-section">
+  <view class="stats-section" wx:if="{{isBound}}">
     <view class="section-title">📊 小厨房统计</view>
     <view class="stats-card">
       <view class="stat-item">
@@ -80,6 +112,46 @@
     <view class="footer-content">
       <image class="footer-mascot" src="/images/4aa65830d0f97dad0cb40d992405e6cc-removebg-preview.png" mode="aspectFit"></image>
       <text class="footer-text">帕恰狗祝你们用餐愉快 ~</text>
+    </view>
+  </view>
+
+  <!-- 设置头像昵称弹窗 -->
+  <view wx:if="{{showProfileModal}}" class="modal-mask" catchtap="preventClose">
+    <view class="modal-content profile-modal" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">欢迎来到帕恰狗的小厨房</text>
+        <text class="modal-subtitle">先设置一下你的头像和昵称吧</text>
+      </view>
+      <view class="modal-body">
+        <!-- 头像选择 -->
+        <view class="avatar-section">
+          <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+            <image class="avatar-preview" src="{{tempAvatarUrl || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}" mode="aspectFill"></image>
+            <view class="avatar-edit-icon">📷</view>
+          </button>
+          <text class="avatar-hint">点击选择头像</text>
+        </view>
+        <!-- 昵称输入 -->
+        <view class="nickname-section">
+          <text class="nickname-label">昵称</text>
+          <view class="nickname-input-wrap">
+            <input
+              class="nickname-input"
+              type="nickname"
+              placeholder="点击输入昵称"
+              value="{{tempNickname}}"
+              bindinput="onNicknameInput"
+            />
+          </view>
+          <view class="nickname-tip">
+            <text class="tip-icon">💡</text>
+            <text class="tip-text">点击输入框，键盘上方可选择微信昵称</text>
+          </view>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="modal-btn confirm full" bindtap="saveProfile">开始使用</view>
+      </view>
     </view>
   </view>
 </view>

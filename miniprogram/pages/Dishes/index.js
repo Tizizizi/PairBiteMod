@@ -2,6 +2,7 @@ const app = getApp()
 
 Page({
   data: {
+    isBound: false,
     dishes: [],
     filteredDishes: [],
     search: '',
@@ -9,9 +10,22 @@ Page({
     partnerName: '',
   },
 
-  async onShow() {
-    await this.getPartnerName()
-    await this.loadDishes()
+  onShow() {
+    // 信息不完整时跳回首页（首页会弹窗）
+    if (!app.isProfileComplete()) {
+      wx.switchTab({ url: '/pages/MainPage/index' })
+      return
+    }
+    const isBound = app.isBound()
+    this.setData({ isBound })
+    // 未绑定时跳转绑定页
+    if (!isBound) {
+      wx.navigateTo({ url: '/pages/Bind/index' })
+      return
+    }
+    app.setKitchenTitle()
+    this.getPartnerName()
+    this.loadDishes()
   },
 
   // 获取伴侣名字
@@ -30,12 +44,20 @@ Page({
   async loadDishes() {
     this.setData({ loading: true })
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionDishList)
-        .orderBy('createTime', 'desc')
-        .get()
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          orderBy: 'createTime',
+          order: 'desc',
+          limit: 100
+        }
+      })
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
 
-      const dishes = res.data.map(item => ({
+      const dishes = res.result.data.map(item => ({
         ...item,
         createTimeText: this.formatDate(item.createTime)
       }))
@@ -104,9 +126,22 @@ Page({
 
   // 删除菜品
   async deleteDish(id) {
+    wx.showLoading({ title: '删除中...', mask: true })
     try {
-      const db = await app.database()
-      await db.collection(app.globalData.collectionDishList).doc(id).remove()
+      const res = await wx.cloud.callFunction({
+        name: 'updateCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          docId: id,
+          action: 'remove'
+        }
+      })
+
+      wx.hideLoading()
+
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '删除失败')
+      }
 
       // 更新本地数据
       const dishes = this.data.dishes.filter(item => item._id !== id)
@@ -115,6 +150,7 @@ Page({
 
       wx.showToast({ title: '已删除', icon: 'success' })
     } catch (e) {
+      wx.hideLoading()
       console.error('删除失败', e)
       wx.showToast({ title: '删除失败', icon: 'none' })
     }

@@ -40,12 +40,19 @@ Page({
     if (!this.data._id) return
 
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionDishList)
-        .doc(this.data._id)
-        .get()
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          docId: this.data._id
+        }
+      })
 
-      const dish = res.data
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+
+      const dish = res.result.data
       this.setData({
         dish,
         dateText: this.formatDate(dish.createTime),
@@ -93,10 +100,18 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           try {
-            const db = await app.database()
-            await db.collection(app.globalData.collectionDishList)
-              .doc(this.data._id)
-              .remove()
+            const result = await wx.cloud.callFunction({
+              name: 'updateCoupleData',
+              data: {
+                collection: app.globalData.collectionDishList,
+                docId: this.data._id,
+                action: 'remove'
+              }
+            })
+
+            if (!result.result?.success) {
+              throw new Error(result.result?.message || '删除失败')
+            }
 
             wx.showToast({ title: '已删除', icon: 'success' })
             setTimeout(() => {

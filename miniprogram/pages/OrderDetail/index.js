@@ -14,9 +14,19 @@ Page({
 
   async loadOrder(id) {
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionOrderList).doc(id).get()
-      const order = res.data
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionOrderList,
+          docId: id
+        }
+      })
+
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+
+      const order = res.result.data
       order.dateText = this.formatDate(order.createTime)
       order.timeText = this.formatTime(order.createTime)
       order.creatorName = await this.getCreatorName(order._openid)

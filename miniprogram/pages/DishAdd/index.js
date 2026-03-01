@@ -30,12 +30,19 @@ Page({
   // 加载菜品信息（编辑模式）
   async loadDish() {
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionDishList)
-        .doc(this.data._id)
-        .get()
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          docId: this.data._id
+        }
+      })
 
-      const dish = res.data
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+
+      const dish = res.result.data
       const categoryIndex = this.data.categories.findIndex(c => c.id === dish.category) || 0
       this.setData({
         name: dish.name,
@@ -126,27 +133,40 @@ Page({
 
       if (isEdit) {
         // 编辑模式：更新现有记录
-        await db.collection(app.globalData.collectionDishList)
-          .doc(_id)
-          .update({
+        const res = await wx.cloud.callFunction({
+          name: 'updateCoupleData',
+          data: {
+            collection: app.globalData.collectionDishList,
+            docId: _id,
+            action: 'update',
             data: {
               name: name.trim(),
               description: this.data.description.trim(),
               imageUrl,
               category,
-              updateTime: db.serverDate(),
+              updateTime: new Date(),
             }
-          })
+          }
+        })
+
         wx.hideLoading()
+
+        if (!res.result?.success) {
+          wx.showToast({ title: res.result?.message || '修改失败', icon: 'none' })
+          return
+        }
+
         wx.showToast({ title: '修改成功', icon: 'success' })
       } else {
-        // 新增模式
+        // 新增模式（带上 coupleId）
+        const coupleId = app.globalData.currentUser?.coupleId || ''
         await db.collection(app.globalData.collectionDishList).add({
           data: {
             name: name.trim(),
             description: this.data.description.trim(),
             imageUrl,
             category,
+            coupleId,
             createTime: db.serverDate(),
           }
         })

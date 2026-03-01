@@ -2,6 +2,7 @@ const app = getApp()
 
 Page({
   data: {
+    isBound: false,
     orders: [],
     loading: true,
     hasMore: true,
@@ -14,26 +15,30 @@ Page({
   },
 
   async onShow() {
-    await this.getOpenId()
-    this.setPartnerName()
+    // 信息不完整时跳回首页（首页会弹窗）
+    if (!app.isProfileComplete()) {
+      wx.switchTab({ url: '/pages/MainPage/index' })
+      return
+    }
+    const isBound = app.isBound()
+    this.setData({ isBound })
+    // 未绑定时跳转绑定页
+    if (!isBound) {
+      wx.navigateTo({ url: '/pages/Bind/index' })
+      return
+    }
+    app.setKitchenTitle()
+    await this.loadUserInfo()
     await this.loadOrders(true)
   },
 
-  // 设置伴侣名字
-  setPartnerName() {
-    const partnerName = app.getPartnerName(this.data.openid)
-    this.setData({ partnerName })
-  },
-
-  // 获取openid
-  async getOpenId() {
-    try {
-      const res = await wx.cloud.callFunction({ name: 'getOpenId' })
-      const openid = res.result?.openid || ''
-      this.setData({ openid })
-    } catch (e) {
-      console.error('获取openid失败', e)
-    }
+  // 加载用户信息
+  async loadUserInfo() {
+    const { currentUser, partner } = await app.loadUserInfo()
+    this.setData({
+      openid: currentUser?._id || '',
+      partnerName: partner?.nickname || '对方'
+    })
   },
 
   // 加载历史记录
@@ -45,16 +50,25 @@ Page({
     this.setData({ loading: true })
 
     try {
-      const db = await app.database()
       const { page, pageSize, orders: existingOrders } = this.data
 
-      const res = await db.collection(app.globalData.collectionOrderList)
-        .orderBy('createTime', 'desc')
-        .skip(page * pageSize)
-        .limit(pageSize)
-        .get()
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionOrderList,
+          orderBy: 'createTime',
+          order: 'desc',
+          skip: page * pageSize,
+          limit: pageSize
+        }
+      })
 
-      const newOrders = res.data.map(item => ({
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+
+      const data = res.result.data
+      const newOrders = data.map(item => ({
         ...item,
         dateText: this.formatDate(item.createTime),
         timeText: this.formatTime(item.createTime),
@@ -64,7 +78,7 @@ Page({
 
       this.setData({
         orders: reset ? newOrders : [...existingOrders, ...newOrders],
-        hasMore: res.data.length === pageSize,
+        hasMore: data.length === pageSize,
         page: page + 1,
         loading: false
       })
@@ -83,8 +97,7 @@ Page({
 
   // 获取创建者名字
   getCreatorName(openid) {
-    if (openid === this.data.openid) return '你'
-    return app.getPartnerName(this.data.openid)
+    return app.getDisplayName(openid)
   },
 
   // 格式化日期
@@ -141,20 +154,31 @@ Page({
     if (index === -1) return
 
     const newMarked = !orders[index].marked
+    wx.showLoading({ title: '处理中...', mask: true })
     try {
-      const db = await app.database()
-      const res = await db.collection(app.globalData.collectionOrderList).doc(id).update({
-        data: { marked: newMarked }
+      const res = await wx.cloud.callFunction({
+        name: 'updateCoupleData',
+        data: {
+          collection: app.globalData.collectionOrderList,
+          docId: id,
+          action: 'update',
+          data: { marked: newMarked }
+        }
       })
-      if (res.stats.updated === 0) {
-        this.showTip('只能标记自己点的菜哦~')
+
+      wx.hideLoading()
+
+      if (!res.result?.success) {
+        this.showTip(res.result?.message || '标记失败')
         return
       }
+
       orders[index].marked = newMarked
       orders[index].slideButtons = this.getSlideButtons(newMarked)
       this.setData({ orders })
       wx.showToast({ title: newMarked ? '已标记' : '已取消标记', icon: 'success' })
     } catch (e) {
+      wx.hideLoading()
       console.error('标记失败', e)
       this.showTip('标记失败了，再试一次吧~')
     }
@@ -168,17 +192,29 @@ Page({
       confirmColor: '#E57373',
       success: async (res) => {
         if (res.confirm) {
+          wx.showLoading({ title: '删除中...', mask: true })
           try {
-            const db = await app.database()
-            const result = await db.collection(app.globalData.collectionOrderList).doc(id).remove()
-            if (result.stats.removed === 0) {
-              setTimeout(() => this.showTip('只能删除自己点的菜哦~'), 300)
+            const result = await wx.cloud.callFunction({
+              name: 'updateCoupleData',
+              data: {
+                collection: app.globalData.collectionOrderList,
+                docId: id,
+                action: 'remove'
+              }
+            })
+
+            wx.hideLoading()
+
+            if (!result.result?.success) {
+              setTimeout(() => this.showTip(result.result?.message || '删除失败'), 300)
               return
             }
+
             wx.showToast({ title: '已删除', icon: 'success' })
             const orders = this.data.orders.filter(item => item._id !== id)
             this.setData({ orders })
           } catch (e) {
+            wx.hideLoading()
             console.error('删除失败', e)
             setTimeout(() => this.showTip('只能删除自己点的菜哦~'), 300)
           }
