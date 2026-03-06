@@ -29,21 +29,10 @@ Page({
     searchKey: '',
   },
 
-  onShow() {
-    // 信息不完整时跳回首页（首页会弹窗）
-    if (!app.isProfileComplete()) {
-      wx.switchTab({ url: '/pages/MainPage/index' })
-      return
-    }
-    const isBound = app.isBound()
-    this.setData({ isBound })
-    // 未绑定时跳转绑定页
-    if (!isBound) {
-      wx.navigateTo({ url: '/pages/Bind/index' })
-      return
-    }
+  async onShow() {
     app.setKitchenTitle()
     this.loadPartnerName()
+    await app.loadCategories()
     this.loadDishes()
   },
 
@@ -82,21 +71,27 @@ Page({
         category: item.category || 'meat'
       }))
 
-      const categories = app.globalData.categories
+      const categories = app.globalData.categories || []
+      if (categories.length === 0) {
+        console.warn('分类数据为空，请检查 manageCategory 云函数')
+        this.setData({ dishes, allDishes: dishes, loading: false })
+        return
+      }
+
       const dishesByCategory = {}
       const categoryCount = {}
       const selectedByCategory = {}
 
       categories.forEach(cat => {
-        dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-        categoryCount[cat.id] = dishesByCategory[cat.id].length
-        selectedByCategory[cat.id] = dishes.filter(d => d.category === cat.id && d.selected).length
+        dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+        categoryCount[cat._id] = dishesByCategory[cat._id].length
+        selectedByCategory[cat._id] = dishes.filter(d => d.category === cat._id && d.selected).length
       })
 
       const selectedDishes = dishes.filter(d => d.selected)
 
       // 找到第一个有菜品的分类
-      const firstCategory = categories.find(cat => categoryCount[cat.id] > 0)
+      const firstCategory = categories.find(cat => categoryCount[cat._id] > 0)
 
       this.setData({
         dishes,
@@ -107,7 +102,7 @@ Page({
         selectedByCategory,
         selectedDishes,
         selectedCount: selectedDishes.length,
-        currentCategory: firstCategory ? firstCategory.id : categories[0].id,
+        currentCategory: firstCategory ? firstCategory._id : categories[0]._id,
         loading: false,
         searchKey: ''
       })
@@ -126,7 +121,8 @@ Page({
     const id = e.currentTarget.dataset.id
     this.setData({
       currentCategory: id,
-      dishScrollId: `cat-${id}`
+      dishScrollId: `cat-${id}`,
+      categoryScrollId: `catleft-${id}`
     })
   },
 
@@ -157,25 +153,56 @@ Page({
     const selectedByCategory = {}
 
     categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      categoryCount[cat.id] = dishesByCategory[cat.id].length
-      selectedByCategory[cat.id] = dishes.filter(d => d.category === cat.id && d.selected).length
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      categoryCount[cat._id] = dishesByCategory[cat._id].length
+      selectedByCategory[cat._id] = dishes.filter(d => d.category === cat._id && d.selected).length
     })
 
-    const firstCategory = categories.find(cat => categoryCount[cat.id] > 0)
+    const firstCategory = categories.find(cat => categoryCount[cat._id] > 0)
 
     this.setData({
       dishes,
       dishesByCategory,
       categoryCount,
       selectedByCategory,
-      currentCategory: firstCategory ? firstCategory.id : categories[0].id
+      currentCategory: firstCategory ? firstCategory._id : categories[0]._id
     })
   },
 
   // 监听右侧滚动，同步左侧高亮
   onDishScroll(e) {
-    // 简化处理：不做滚动联动，只做点击联动
+    if (this._scrollTimer) return
+    this._scrollTimer = setTimeout(() => {
+      this._scrollTimer = null
+      this._syncCategoryHighlight()
+    }, 100)
+  },
+
+  _syncCategoryHighlight() {
+    const visibleCats = this.data.categories.filter(c => this.data.categoryCount[c._id] > 0)
+    if (visibleCats.length === 0) return
+
+    const query = this.createSelectorQuery()
+    query.select('.dish-list').boundingClientRect()
+    visibleCats.forEach(cat => {
+      query.select(`#cat-${cat._id}`).boundingClientRect()
+    })
+    query.exec(rects => {
+      if (!rects || !rects[0]) return
+      const listTop = rects[0].top + 20
+      let activeId = visibleCats[0]._id
+      for (let i = 0; i < visibleCats.length; i++) {
+        if (rects[i + 1] && rects[i + 1].top <= listTop) {
+          activeId = visibleCats[i]._id
+        }
+      }
+      if (activeId !== this.data.currentCategory) {
+        this.setData({
+          currentCategory: activeId,
+          categoryScrollId: `catleft-${activeId}`
+        })
+      }
+    })
   },
 
   // 切换选中状态
@@ -192,8 +219,8 @@ Page({
     const dishesByCategory = {}
     const selectedByCategory = {}
     this.data.categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      selectedByCategory[cat.id] = dishes.filter(d => d.category === cat.id && d.selected).length
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      selectedByCategory[cat._id] = dishes.filter(d => d.category === cat._id && d.selected).length
     })
 
     const selectedDishes = dishes.filter(item => item.selected)
@@ -270,8 +297,8 @@ Page({
     const dishesByCategory = {}
     const selectedByCategory = {}
     this.data.categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      selectedByCategory[cat.id] = dishes.filter(d => d.category === cat.id && d.selected).length
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      selectedByCategory[cat._id] = dishes.filter(d => d.category === cat._id && d.selected).length
     })
 
     const selectedDishes = dishes.filter(item => item.selected)
@@ -300,8 +327,8 @@ Page({
     const dishesByCategory = {}
     const selectedByCategory = {}
     this.data.categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      selectedByCategory[cat.id] = dishes.filter(d => d.category === cat.id && d.selected).length
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      selectedByCategory[cat._id] = dishes.filter(d => d.category === cat._id && d.selected).length
     })
 
     const selectedDishes = dishes.filter(item => item.selected)
@@ -322,8 +349,8 @@ Page({
     const dishesByCategory = {}
     const selectedByCategory = {}
     this.data.categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      selectedByCategory[cat.id] = 0
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      selectedByCategory[cat._id] = 0
     })
 
     this.setData({
@@ -353,7 +380,10 @@ Page({
 
   // 输入备注
   onRemarkInput(e) {
-    this.setData({ remark: e.detail.value })
+    let value = e.detail.value
+    if (value.length > 100) value = value.slice(0, 100)
+    this.setData({ remark: value })
+    return value
   },
 
   // 关闭备注弹窗
@@ -388,7 +418,7 @@ Page({
 
       // 保存点菜记录（带上 coupleId）
       const coupleId = app.globalData.currentUser?.coupleId || ''
-      await db.collection(app.globalData.collectionOrderList).add({
+      const addRes = await db.collection(app.globalData.collectionOrderList).add({
         data: {
           dishes: selectedDishes.map(item => ({
             _id: item._id,
@@ -401,6 +431,7 @@ Page({
           createTime: db.serverDate(),
         }
       })
+      const orderId = addRes._id
 
       // 更新菜品点单次数（异步执行，不阻塞）
       for (const dish of selectedDishes) {
@@ -416,7 +447,7 @@ Page({
       }
 
       // 发送通知
-      await this.sendNotification(selectedDishes, remark)
+      await this.sendNotification(selectedDishes, remark, orderId)
 
       wx.hideLoading()
       // 显示成功弹窗
@@ -434,7 +465,7 @@ Page({
   },
 
   // 发送通知
-  async sendNotification(dishes, remark) {
+  async sendNotification(dishes, remark, orderId) {
     const dishNames = dishes.map(d => d.name).join('、')
     try {
       await wx.cloud.callFunction({
@@ -443,7 +474,8 @@ Page({
           type: 'newOrder',
           dishNames,
           count: dishes.length,
-          remark
+          remark,
+          orderId
         }
       })
     } catch (e) {
@@ -462,8 +494,8 @@ Page({
     const dishesByCategory = {}
     const selectedByCategory = {}
     this.data.categories.forEach(cat => {
-      dishesByCategory[cat.id] = dishes.filter(d => d.category === cat.id)
-      selectedByCategory[cat.id] = 0
+      dishesByCategory[cat._id] = dishes.filter(d => d.category === cat._id)
+      selectedByCategory[cat._id] = 0
     })
 
     this.setData({

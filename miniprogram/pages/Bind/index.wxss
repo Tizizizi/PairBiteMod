@@ -1,6 +1,6 @@
 /* 自定义导航栏 */
 .custom-nav {
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .nav-content {
@@ -55,7 +55,7 @@
   flex-direction: column;
   align-items: center;
   padding: 80rpx 40rpx 60rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .header-emoji {
@@ -141,7 +141,7 @@
 .item-code {
   font-size: 32rpx;
   font-weight: 600;
-  color: #7CB342;
+  color: #6FCF97;
   letter-spacing: 4rpx;
   margin-right: 16rpx;
 }
@@ -149,7 +149,7 @@
 .copy-btn {
   font-size: 24rpx;
   color: white;
-  background: #7CB342;
+  background: #6FCF97;
   padding: 8rpx 20rpx;
   border-radius: 20rpx;
 }
@@ -161,7 +161,7 @@
   justify-content: center;
   margin: 24rpx 0 0;
   height: 88rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #8BC34A 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #6FCF97 100%);
   color: white;
   font-size: 32rpx;
   border-radius: 44rpx;
@@ -187,7 +187,7 @@
 
 /* 已绑定状态 - 情侣头部 */
 .couple-header-bound {
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
   padding: 80rpx 40rpx 60rpx;
   display: flex;
   flex-direction: column;
@@ -235,8 +235,8 @@
   padding-top: 20rpx;
 }
 
-.couple-heart {
-  font-size: 56rpx;
+.couple-heart-beat {
+  font-size: 44rpx;
   animation: heartbeat 1.2s ease-in-out infinite;
 }
 
@@ -295,7 +295,7 @@
 .info-code {
   font-size: 30rpx;
   font-weight: 600;
-  color: #7CB342;
+  color: #6FCF97;
   letter-spacing: 4rpx;
   margin-right: 12rpx;
 }
@@ -346,7 +346,7 @@
 .stat-number {
   font-size: 48rpx;
   font-weight: 600;
-  color: #7CB342;
+  color: #6FCF97;
   margin-bottom: 8rpx;
 }
 
@@ -382,7 +382,7 @@
 .tips-title {
   font-size: 28rpx;
   font-weight: 500;
-  color: #558B2F;
+  color: #5AC476;
 }
 
 .tips-list {
@@ -478,7 +478,7 @@
 }
 
 .modal-btn.confirm {
-  color: #7CB342;
+  color: #6FCF97;
   font-weight: 500;
 }
 
@@ -512,6 +512,6 @@
 }
 
 .bind-btn.active {
-  background: linear-gradient(135deg, #7CB342 0%, #8BC34A 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #6FCF97 100%);
   color: white;
 }

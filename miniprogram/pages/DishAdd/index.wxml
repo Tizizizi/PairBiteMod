@@ -25,7 +25,7 @@
       </view>
       <input class="input-field" placeholder="给这道菜起个名字吧"
              placeholderClass="input-placeholder"
-             bindinput="onNameInput" value="{{name}}" maxlength="20" />
+             bindinput="onNameInput" value="{{name}}" />
       <text class="input-counter">{{name.length}}/20</text>
     </view>
 
@@ -48,12 +48,12 @@
       <view class="input-label">
         <text class="label-icon">💬</text>
         <text class="label-text">一句话描述</text>
-        <text class="label-optional">（选填）</text>
+        <text class="label-optional">（选填，最多6字）</text>
       </view>
       <input class="input-field" placeholder="例如：超下饭"
              placeholderClass="input-placeholder"
-             bindinput="onDescInput" value="{{description}}" maxlength="5" />
-      <text class="input-counter">{{description.length}}/5</text>
+             bindinput="onDescInput" value="{{description}}" />
+      <text class="input-counter">{{description.length}}/6</text>
     </view>
   </view>
 
@@ -63,3 +63,4 @@
     <view class="btn-save" bindtap="saveDish">{{isEdit ? '保存修改' : '保存菜品'}}</view>
   </view>
 </view>
+<bind-guard />

@@ -7,7 +7,7 @@
 /* 页面头部 */
 .page-header {
   padding: 40rpx 30rpx 30rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .page-title {
@@ -83,7 +83,7 @@
 
 .btn-primary {
   padding: 24rpx 60rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
   border-radius: 50rpx;
   font-size: 30rpx;
   color: white;
@@ -146,11 +146,11 @@
 .fab {
   position: fixed;
   right: 40rpx;
-  bottom: 200rpx;
+  bottom: calc(120rpx + env(safe-area-inset-bottom));
   width: 110rpx;
   height: 110rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
   display: flex;
   align-items: center;
   justify-content: center;

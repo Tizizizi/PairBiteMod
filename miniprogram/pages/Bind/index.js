@@ -168,9 +168,9 @@ Page({
     }
   },
 
-  // 返回首页
+  // 返回上一页
   goBack() {
-    wx.switchTab({ url: '/pages/MainPage/index' })
+    wx.navigateBack()
   },
 
   // 显示修改厨房名称弹窗
@@ -191,7 +191,10 @@ Page({
 
   // 输入厨房名称
   onKitchenNameInput(e) {
-    this.setData({ tempKitchenName: e.detail.value })
+    let value = e.detail.value
+    if (value.length > 8) value = value.slice(0, 8)
+    this.setData({ tempKitchenName: value })
+    return value
   },
 
   // 保存厨房名称

@@ -7,7 +7,7 @@
 /* 页面头部 */
 .page-header {
   padding: 40rpx 30rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .page-title {
@@ -167,7 +167,7 @@
   padding: 28rpx;
   font-size: 30rpx;
   color: white;
-  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
   border-radius: 50rpx;
   font-weight: 500;
 }

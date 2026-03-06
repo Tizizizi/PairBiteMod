@@ -1,4 +1,4 @@
-<view class="container" wx:if="{{isBound}}">
+<view class="container">
   <!-- 页面头部 -->
   <view class="page-header">
     <text class="page-title">菜品库</text>
@@ -44,3 +44,5 @@
     <text class="fab-text">+</text>
   </view>
 </view>
+
+<bind-guard />

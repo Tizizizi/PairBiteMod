@@ -76,7 +76,7 @@
 
 .btn-edit {
   padding: 28rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
   border-radius: 50rpx;
   text-align: center;
 }

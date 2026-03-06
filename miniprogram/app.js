@@ -1,3 +1,26 @@
+// 全局页面绑定拦截器 —— 白名单之外的页面自动校验绑定状态
+const _originalPage = Page
+const _bindWhitelist = ['pages/MainPage/index', 'pages/Settings/index', 'pages/Bind/index']
+
+Page = function(options) {
+  const originalOnShow = options.onShow
+  options.onShow = function(...args) {
+    const app = getApp()
+    const pages = getCurrentPages()
+    const route = pages[pages.length - 1]?.route || ''
+    const whitelisted = _bindWhitelist.some(w => route.includes(w))
+
+    if (!whitelisted && app && app.bindGuard && !app.bindGuard(this)) {
+      return
+    }
+
+    if (originalOnShow) {
+      return originalOnShow.apply(this, args)
+    }
+  }
+  _originalPage(options)
+}
+
 App({
   async onLaunch() {
     this.initcloud()
@@ -20,17 +43,9 @@ App({
       appName: '帕恰狗的小厨房',
       version: '1.0.0',
 
-      // 菜品分类
-      categories: [
-        { id: 'meat', name: '荤菜', icon: '🥩' },
-        { id: 'vegetable', name: '素菜', icon: '🥬' },
-        { id: 'soup', name: '汤类', icon: '🍲' },
-        { id: 'rice', name: '主食', icon: '🍚' },
-        { id: 'noodle', name: '面食', icon: '🍜' },
-        { id: 'cold', name: '凉菜', icon: '🥗' },
-        { id: 'dessert', name: '甜点', icon: '🍰' },
-        { id: 'drink', name: '饮品', icon: '🥤' },
-      ],
+      // 菜品分类（从数据库动态加载）
+      categories: [],
+      categoriesLoaded: false,
     }
   },
 
@@ -93,6 +108,10 @@ App({
         this.globalData.currentUser = res.result.user
         this.globalData.partner = res.result.partner
         this.globalData.userLoaded = true
+        // 已绑定时加载分类
+        if (res.result.user?.bindStatus === 'bound') {
+          await this.loadCategories()
+        }
         return {
           currentUser: res.result.user,
           partner: res.result.partner
@@ -102,6 +121,33 @@ App({
       console.error('load user info error', e)
     }
     return { currentUser: null, partner: null }
+  },
+
+  // 加载分类数据
+  async loadCategories(forceRefresh = false) {
+    if (this.globalData.categoriesLoaded && !forceRefresh) {
+      return this.globalData.categories
+    }
+    try {
+      // 先确保初始化默认分类
+      await wx.cloud.callFunction({
+        name: 'manageCategory',
+        data: { action: 'init' }
+      })
+      // 加载分类列表
+      const res = await wx.cloud.callFunction({
+        name: 'manageCategory',
+        data: { action: 'list' }
+      })
+      if (res.result?.success) {
+        this.globalData.categories = res.result.data
+        this.globalData.categoriesLoaded = true
+        return res.result.data
+      }
+    } catch (e) {
+      console.error('load categories error', e)
+    }
+    return []
   },
 
   // 更新用户昵称
@@ -129,7 +175,7 @@ App({
         data: { inviteCode }
       })
       if (res.result && res.result.success) {
-        // 刷新用户信息
+        // 刷新用户信息（会自动加载分类）
         await this.loadUserInfo(true)
         return { success: true, partner: res.result.partner }
       }
@@ -169,6 +215,17 @@ App({
   isProfileComplete() {
     const user = this.globalData.currentUser
     return user?.nickname && user?.avatarUrl
+  },
+
+  // 页面绑定守卫：校验资料完整性和绑定状态，返回是否已绑定
+  bindGuard(page) {
+    if (!this.isProfileComplete()) {
+      wx.switchTab({ url: '/pages/MainPage/index' })
+      return false
+    }
+    const isBound = this.isBound()
+    page.setData({ isBound })
+    return isBound
   },
 
   // 获取伴侣名字

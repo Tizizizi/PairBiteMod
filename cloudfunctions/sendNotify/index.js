@@ -15,7 +15,7 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const currentOpenid = wxContext.OPENID
 
-  const { type, dishNames, count, dishName, remark } = event
+  const { type, dishNames, count, dishName, remark, orderId } = event
 
   // 从 User 集合查询当前用户的伴侣
   let targetOpenid
@@ -35,10 +35,11 @@ exports.main = async (event, context) => {
 
     // 根据通知类型发送不同消息
     if (type === 'newOrder') {
+      const pagePath = orderId ? `pages/OrderDetail/index?id=${orderId}` : 'pages/OrderHistory/index'
       result = await cloud.openapi.subscribeMessage.send({
         touser: targetOpenid,
         templateId: TEMPLATE_ID,
-        page: 'pages/OrderHistory/index',
+        page: pagePath,
         data: {
           time25: { value: formatTime(new Date()) },                    // 时间（精确到分钟）
           thing31: { value: '帕恰狗的小厨房' },                           // 任务名称（写死）

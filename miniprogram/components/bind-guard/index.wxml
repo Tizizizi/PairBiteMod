@@ -1,0 +1,8 @@
+<view class="unbind-overlay" wx:if="{{show}}">
+  <view class="unbind-card">
+    <text class="unbind-icon">🔗</text>
+    <text class="unbind-title">还未绑定伴侣</text>
+    <text class="unbind-desc">绑定后即可使用此功能~</text>
+    <view class="unbind-btn" bindtap="goToBind">去绑定</view>
+  </view>
+</view>

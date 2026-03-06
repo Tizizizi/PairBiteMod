@@ -13,7 +13,8 @@ Page({
     saving: false,
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await app.loadCategories()
     this.setData({ categories: app.globalData.categories })
     if (options.id) {
       this.setData({ _id: options.id, isEdit: true })
@@ -43,7 +44,7 @@ Page({
       }
 
       const dish = res.result.data
-      const categoryIndex = this.data.categories.findIndex(c => c.id === dish.category) || 0
+      const categoryIndex = this.data.categories.findIndex(c => c._id === dish.category) || 0
       this.setData({
         name: dish.name,
         description: dish.description || '',
@@ -58,12 +59,18 @@ Page({
 
   // 输入菜品名称
   onNameInput(e) {
-    this.setData({ name: e.detail.value })
+    let value = e.detail.value
+    if (value.length > 20) value = value.slice(0, 20)
+    this.setData({ name: value })
+    return value
   },
 
   // 输入菜品描述
   onDescInput(e) {
-    this.setData({ description: e.detail.value })
+    let value = e.detail.value
+    if (value.length > 6) value = value.slice(0, 6)
+    this.setData({ description: value })
+    return value
   },
 
   // 选择分类
@@ -129,7 +136,7 @@ Page({
 
       const db = await app.database()
 
-      const category = this.data.categories[this.data.categoryIndex].id
+      const category = this.data.categories[this.data.categoryIndex]._id
 
       if (isEdit) {
         // 编辑模式：更新现有记录

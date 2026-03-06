@@ -8,18 +8,19 @@
     "pages/OrderHistory/index",
     "pages/OrderDetail/index",
     "pages/Settings/index",
-    "pages/Bind/index"
+    "pages/Bind/index",
+    "pages/CategoryManage/index"
   ],
   "window": {
     "backgroundColor": "#F5F9F0",
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#7CB342",
+    "navigationBarBackgroundColor": "#6FCF97",
     "navigationBarTitleText": "帕恰狗的小厨房",
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
     "color": "#666666",
-    "selectedColor": "#7CB342",
+    "selectedColor": "#6FCF97",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [{
@@ -43,6 +44,9 @@
       "selectedIconPath": "images/TabBar/AccountIconColor.png",
       "text": "历史"
     }]
+  },
+  "usingComponents": {
+    "bind-guard": "/components/bind-guard/index"
   },
   "lazyCodeLoading": "requiredComponents",
   "cloud": true,

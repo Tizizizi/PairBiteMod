@@ -6,7 +6,7 @@
 
 /* 头部卡片 */
 .header-card {
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
   border-radius: 24rpx;
   padding: 40rpx 30rpx;
   margin-bottom: 24rpx;
@@ -61,7 +61,7 @@
 .dish-total {
   margin-left: auto;
   font-size: 26rpx;
-  color: #7CB342;
+  color: #6FCF97;
   font-weight: normal;
 }
 
@@ -112,7 +112,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7CB342 0%, #558B2F 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
   color: white;
   font-size: 32rpx;
   font-weight: 500;
@@ -125,6 +125,83 @@
 .reorder-icon {
   font-size: 36rpx;
   margin-right: 12rpx;
+}
+
+/* 成品照片 */
+.photo-section .section-title {
+  position: relative;
+}
+
+.photo-tip {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #999;
+  font-weight: normal;
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 30rpx;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  border: 2rpx dashed #B8E6C1;
+}
+
+.upload-icon {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.upload-text {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.upload-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.photo-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.finished-photo {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx;
+  display: block;
+}
+
+.photo-actions {
+  display: flex;
+  justify-content: center;
+  gap: 40rpx;
+  margin-top: 24rpx;
+}
+
+.photo-action-btn {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  color: #666;
+  padding: 16rpx 24rpx;
+  background: #F5F5F5;
+  border-radius: 30rpx;
+}
+
+.photo-action-btn .action-icon {
+  margin-right: 8rpx;
+}
+
+.photo-action-btn.delete {
+  color: #E57373;
+  background: #FFF5F5;
 }
 
 /* 加载中 */

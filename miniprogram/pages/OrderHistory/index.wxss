@@ -7,7 +7,7 @@
 /* 页面头部 */
 .page-header {
   padding: 40rpx 30rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .page-title {
@@ -149,7 +149,7 @@ mp-slideview .mark-btn,
 
 .history-dish-name {
   font-size: 26rpx;
-  color: #558B2F;
+  color: #5AC476;
 }
 
 /* 备注 */
@@ -188,7 +188,7 @@ mp-slideview .mark-btn,
 
 .dish-count {
   font-size: 26rpx;
-  color: #7CB342;
+  color: #6FCF97;
   font-weight: 500;
 }
 
@@ -200,7 +200,7 @@ mp-slideview .mark-btn,
 
 .load-more text {
   font-size: 28rpx;
-  color: #7CB342;
+  color: #6FCF97;
 }
 
 /* 没有更多 */
@@ -265,7 +265,7 @@ mp-slideview .mark-btn,
 }
 
 .tip-btn {
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
   color: white;
   font-size: 28rpx;
   padding: 20rpx 60rpx;

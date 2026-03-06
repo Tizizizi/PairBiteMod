@@ -1,4 +1,16 @@
-<view class="container">
+<!-- 页面加载中 -->
+<view class="page-loading" wx:if="{{pageLoading}}">
+  <view class="loading-content">
+    <image class="loading-image" src="/images/7b4bee27a7ccb84274ec7753e54c50c7.gif" mode="aspectFit"></image>
+    <view class="loading-dots-wrap">
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+    </view>
+  </view>
+</view>
+
+<view class="container" wx:else>
   <!-- 顶部区域：已绑定显示情侣卡片，未绑定显示欢迎卡片 -->
   <view class="welcome-section {{isBound ? 'couple-mode' : ''}}">
     <!-- 未绑定：原欢迎卡片 -->
@@ -18,7 +30,7 @@
           <text class="couple-avatar-name">{{userName}}</text>
         </view>
         <view class="couple-heart-center">
-          <view class="couple-heart-beat">💕</view>
+          <view class="couple-heart-beat">🍔</view>
           <text class="couple-days" wx:if="{{bindDays > 0}}">{{bindDays}}天</text>
         </view>
         <view class="couple-avatar-item">
@@ -44,7 +56,7 @@
   <!-- 今日状态卡片 -->
   <view class="status-section" wx:if="{{isBound}}">
     <view class="section-title">🍽️ 今日点菜</view>
-    <view class="status-card" wx:if="{{todayOrder}}">
+    <view class="status-card" wx:if="{{todayOrder}}" bindtap="goToTodayOrder">
       <view class="status-header">
         <text class="status-label">{{todayOrder.creatorName}} 点了菜</text>
         <text class="status-time">{{todayOrder.timeText}}</text>
@@ -53,6 +65,9 @@
         <view class="dish-tag" wx:for="{{todayOrder.dishes}}" wx:key="index">
           {{item.name}}
         </view>
+      </view>
+      <view class="photo-hint" wx:if="{{!todayOrder.finishedPhoto}}">
+        <text>📷 做好了记得拍一张~</text>
       </view>
     </view>
     <view class="empty-card" wx:else>
@@ -75,13 +90,13 @@
         <view class="quick-icon" style="background: #E3F2FD;">💕</view>
         <text class="quick-label">绑定关系</text>
       </view>
+      <view class="quick-item" bindtap="goToCategoryManage">
+        <view class="quick-icon" style="background: #F3E5F5;">📂</view>
+        <text class="quick-label">类目管理</text>
+      </view>
       <view class="quick-item" bindtap="goToRecentOrder">
         <view class="quick-icon" style="background: #FFF3E0;">📋</view>
         <text class="quick-label">最近点菜</text>
-      </view>
-      <view class="quick-item" bindtap="requestSubscribeMessage">
-        <view class="quick-icon" style="background: #FCE4EC;">🔔</view>
-        <text class="quick-label">订阅通知</text>
       </view>
     </view>
   </view>

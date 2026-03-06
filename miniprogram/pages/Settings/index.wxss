@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   padding: 60rpx 40rpx;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .header-mascot {
@@ -101,7 +101,7 @@
 
 .item-name {
   font-size: 32rpx;
-  color: #7CB342;
+  color: #6FCF97;
   font-weight: 500;
 }
 
@@ -126,7 +126,7 @@
 
 .item-value {
   font-size: 28rpx;
-  color: #7CB342;
+  color: #6FCF97;
 }
 
 .item-value.unbound {
@@ -174,7 +174,7 @@
 .modal-header {
   padding: 40rpx;
   text-align: center;
-  background: linear-gradient(135deg, #7CB342 0%, #AED581 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
 }
 
 .modal-title {
@@ -223,7 +223,7 @@
   bottom: 0;
   width: 48rpx;
   height: 48rpx;
-  background: #7CB342;
+  background: #6FCF97;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -304,7 +304,7 @@
 }
 
 .modal-btn.confirm {
-  background: linear-gradient(135deg, #7CB342 0%, #8BC34A 100%);
+  background: linear-gradient(135deg, #6FCF97 0%, #6FCF97 100%);
   color: white;
   font-weight: 500;
 }

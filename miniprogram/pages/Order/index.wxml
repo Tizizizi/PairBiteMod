@@ -1,4 +1,4 @@
-<view class="container" wx:if="{{isBound}}">
+<view class="container">
   <!-- 页面头部 -->
   <view class="page-header">
     <text class="page-title">今天吃什么？</text>
@@ -23,33 +23,34 @@
   <view class="menu-container" wx:if="{{dishes.length > 0}}">
     <!-- 左侧分类 -->
     <scroll-view class="category-list" scroll-y scroll-with-animation scroll-into-view="{{categoryScrollId}}">
-      <view class="category-item {{currentCategory === item.id ? 'active' : ''}}"
-            wx:for="{{categories}}" wx:key="id"
-            data-id="{{item.id}}" bindtap="selectCategory">
+      <view class="category-item {{currentCategory === item._id ? 'active' : ''}}"
+            wx:for="{{categories}}" wx:key="_id"
+            id="catleft-{{item._id}}"
+            data-id="{{item._id}}" bindtap="selectCategory">
         <text class="category-icon">{{item.icon}}</text>
         <text class="category-name">{{item.name}}</text>
-        <text class="category-count" wx:if="{{selectedByCategory[item.id]}}">{{selectedByCategory[item.id]}}</text>
+        <text class="category-count" wx:if="{{selectedByCategory[item._id]}}">{{selectedByCategory[item._id]}}</text>
       </view>
     </scroll-view>
 
     <!-- 右侧菜品 -->
     <scroll-view class="dish-list" scroll-y scroll-with-animation
                  scroll-into-view="{{dishScrollId}}" bindscroll="onDishScroll">
-      <view wx:for="{{categories}}" wx:key="id" wx:if="{{categoryCount[item.id] > 0}}">
-        <view class="category-header" id="cat-{{item.id}}">
+      <view wx:for="{{categories}}" wx:key="_id" wx:if="{{categoryCount[item._id] > 0}}">
+        <view class="category-header" id="cat-{{item._id}}">
           <text class="category-header-icon">{{item.icon}}</text>
           <text class="category-header-name">{{item.name}}</text>
         </view>
         <view class="dish-item {{dish.selected ? 'selected' : ''}}"
-              wx:for="{{dishesByCategory[item.id]}}" wx:for-item="dish" wx:key="_id"
+              wx:for="{{dishesByCategory[item._id]}}" wx:for-item="dish" wx:key="_id"
               data-id="{{dish._id}}" bindtap="toggleSelect">
           <image class="dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
           <image class="dish-image" wx:else src="/images/1efe5aea4d976b0e8597d4ffd5c068bc.jpg" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
           <view class="dish-info">
             <text class="dish-name">{{dish.name}}</text>
             <view class="dish-meta">
-              <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
               <text class="dish-desc" wx:if="{{dish.description}}">"{{dish.description}}"</text>
+              <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
             </view>
           </view>
           <view class="dish-check {{dish.selected ? 'checked' : ''}}">
@@ -112,9 +113,9 @@
   <view class="remark-content" catchtap="preventClose">
     <view class="remark-close" bindtap="closeRemarkModal">✕</view>
     <text class="remark-title">添加备注</text>
-    <text class="remark-hint">给对方留句话吧~</text>
-    <textarea class="remark-input" placeholder="例如：今天想吃清淡点~" maxlength="20" bindinput="onRemarkInput" value="{{remark}}"></textarea>
-    <view class="remark-counter">{{remark.length}}/20</view>
+    <text class="remark-hint">给对方留句话吧~（最多100字）</text>
+    <textarea class="remark-input" placeholder="例如：今天想吃清淡点~" bindinput="onRemarkInput" value="{{remark}}"></textarea>
+    <view class="remark-counter">{{remark.length}}/100</view>
     <view class="remark-buttons">
       <view class="btn-skip" bindtap="skipRemark">跳过</view>
       <view class="btn-confirm" bindtap="confirmRemark">确认</view>
@@ -161,3 +162,5 @@
     </view>
   </view>
 </view>
+
+<bind-guard />

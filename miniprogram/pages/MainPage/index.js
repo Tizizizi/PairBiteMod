@@ -4,6 +4,7 @@ const DEFAULT_AVATAR = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07j
 
 Page({
   data: {
+    pageLoading: true,
     greeting: '你好',
     userName: '',
     userAvatar: '',
@@ -21,6 +22,9 @@ Page({
     tempNickname: '',
   },
 
+  // 是否已完成首次加载
+  hasLoaded: false,
+
   onLoad(options) {
     this.setGreeting()
     // 如果携带了邀请码参数（从分享链接进入）
@@ -30,10 +34,18 @@ Page({
   },
 
   async onShow() {
+    // 首次进入显示 loading，之后直接显示页面
+    if (!this.hasLoaded) {
+      this.setData({ pageLoading: true })
+    }
     // 每次进入首页都强制刷新用户信息，确保绑定状态及时更新
     await app.loadUserInfo(true)
     await this.loadUserInfo()
     app.setKitchenTitle()
+    if (!this.hasLoaded) {
+      this.setData({ pageLoading: false })
+      this.hasLoaded = true
+    }
   },
 
   // 加载用户信息
@@ -70,8 +82,10 @@ Page({
 
     // 已设置头像昵称，加载其他数据
     if (isBound) {
-      this.loadTodayOrder()
-      this.loadStats()
+      await Promise.all([
+        this.loadTodayOrder(),
+        this.loadStats()
+      ])
     }
   },
 
@@ -270,6 +284,12 @@ Page({
     wx.switchTab({ url: '/pages/Order/index' })
   },
 
+  // 跳转到今日订单详情
+  goToTodayOrder() {
+    if (!this.data.todayOrder?._id) return
+    wx.navigateTo({ url: `/pages/OrderDetail/index?id=${this.data.todayOrder._id}` })
+  },
+
   // 跳转到菜品库
   goToDishes() {
     if (!this.checkBindAndGo()) return
@@ -315,5 +335,10 @@ Page({
   // 跳转到设置页
   goToSettings() {
     wx.navigateTo({ url: '/pages/Settings/index' })
+  },
+
+  // 跳转到类目管理
+  goToCategoryManage() {
+    wx.navigateTo({ url: '/pages/CategoryManage/index' })
   },
 })

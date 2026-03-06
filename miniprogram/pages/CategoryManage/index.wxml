@@ -1,0 +1,94 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">类目管理</text>
+    <text class="page-subtitle">管理菜品分类</text>
+  </view>
+
+  <!-- 分类列表 -->
+  <view class="category-list">
+    <view class="category-item" wx:for="{{categories}}" wx:key="_id">
+      <view class="category-main" bindtap="editCategory" data-index="{{index}}">
+        <text class="category-icon">{{item.icon}}</text>
+        <text class="category-name">{{item.name}}</text>
+      </view>
+      <view class="category-actions">
+        <view class="action-btn move" wx:if="{{index > 0}}" catchtap="moveUp" data-index="{{index}}">↑</view>
+        <view class="action-btn move" wx:if="{{index < categories.length - 1}}" catchtap="moveDown" data-index="{{index}}">↓</view>
+        <view class="action-btn delete" catchtap="deleteCategory" data-index="{{index}}">删除</view>
+      </view>
+    </view>
+
+    <view class="empty-tip" wx:if="{{!loading && categories.length === 0}}">
+      <text>暂无分类，点击下方按钮添加</text>
+    </view>
+  </view>
+
+  <!-- 保存排序按钮 -->
+  <view class="save-sort-btn" wx:if="{{sortChanged}}" bindtap="saveSortOrder">
+    <text>保存排序</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="add-btn" bindtap="showAddModal">
+    <text>+ 添加分类</text>
+  </view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" catchtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <text class="modal-title">{{editingIndex >= 0 ? '编辑分类' : '添加分类'}}</text>
+
+      <view class="modal-field">
+        <text class="field-label">图标</text>
+        <view class="emoji-grid">
+          <view class="emoji-item {{tempIcon === item ? 'active' : ''}}"
+                wx:for="{{emojiList}}" wx:key="*this"
+                bindtap="selectEmoji" data-emoji="{{item}}">
+            {{item}}
+          </view>
+        </view>
+        <view class="custom-emoji-row">
+          <text class="custom-emoji-label">自定义：</text>
+          <input class="custom-emoji-input" placeholder="输入emoji" value="{{customIcon}}" bindinput="onCustomIconInput" maxlength="2" />
+          <view class="custom-emoji-preview" wx:if="{{customIcon}}" bindtap="useCustomIcon">使用 {{customIcon}}</view>
+        </view>
+      </view>
+
+      <view class="modal-field">
+        <text class="field-label">名称</text>
+        <input class="field-input" placeholder="分类名称" value="{{tempName}}" bindinput="onNameInput" />
+      </view>
+
+      <view class="modal-buttons">
+        <view class="modal-btn cancel" bindtap="closeModal">取消</view>
+        <view class="modal-btn confirm" bindtap="saveCategory">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 删除转移弹窗 -->
+  <view class="modal-mask" wx:if="{{showTransferModal}}" catchtap="closeTransferModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <text class="modal-title">转移菜品</text>
+      <text class="modal-desc">「{{deletingCategory.icon}} {{deletingCategory.name}}」下有 {{deletingDishCount}} 道菜品，请选择转移到的分类：</text>
+
+      <view class="transfer-list">
+        <view class="transfer-item {{transferTarget === item._id ? 'active' : ''}}"
+              wx:for="{{transferOptions}}" wx:key="_id"
+              bindtap="selectTransferTarget" data-id="{{item._id}}">
+          <text>{{item.icon}} {{item.name}}</text>
+        </view>
+      </view>
+
+      <view class="modal-buttons">
+        <view class="modal-btn cancel" bindtap="closeTransferModal">取消</view>
+        <view class="modal-btn confirm {{!transferTarget ? 'disabled' : ''}}" bindtap="confirmDelete">确认转移并删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>
+<bind-guard />

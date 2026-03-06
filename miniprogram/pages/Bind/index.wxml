@@ -25,7 +25,7 @@
             <text class="couple-name">{{nickname}}</text>
           </view>
           <view class="couple-heart-wrap">
-            <view class="couple-heart">💕</view>
+            <view class="couple-heart-beat">🍔</view>
             <text class="couple-days">{{bindDays}}天</text>
           </view>
           <view class="couple-avatar-wrap">
@@ -167,7 +167,6 @@
           class="kitchen-name-input"
           placeholder="请输入厨房名称"
           value="{{tempKitchenName}}"
-          maxlength="8"
           bindinput="onKitchenNameInput"
           focus="{{showKitchenNameModal}}"
         />

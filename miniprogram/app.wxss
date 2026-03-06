@@ -3,21 +3,21 @@
 
 /* 主题色变量 */
 page {
-  --primary-color: #7CB342;
-  --primary-light: #AED581;
-  --primary-dark: #558B2F;
+  --primary-color: #6FCF97;
+  --primary-light: #B8E6C1;
+  --primary-dark: #5AC476;
   --bg-color: #F5F9F0;
   --card-bg: #FFFFFF;
   --text-primary: #333333;
   --text-secondary: #666666;
   --text-hint: #999999;
   --border-color: #E8F5E9;
-  --success-color: #66BB6A;
+  --success-color: #6FCF97;
   --warning-color: #FFB74D;
 
   --footer-height: 10vh;
   --button-size: 16vw;
-  --button-color: #7CB342;
+  --button-color: #6FCF97;
   --button-icon-size: 6vw;
 }
 
@@ -250,4 +250,56 @@ button::after {
 
 .weui-slideview__btn__wrp.delete-btn .weui-slideview__btn {
   background-color: #E57373 !important;
+}
+
+/* 未绑定提示覆盖层 */
+.unbind-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.unbind-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 50rpx;
+  background: white;
+  border-radius: 32rpx;
+  margin: 60rpx;
+  box-shadow: 0 8rpx 40rpx rgba(124, 179, 66, 0.12);
+}
+
+.unbind-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.unbind-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.unbind-desc {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 40rpx;
+}
+
+.unbind-btn {
+  padding: 24rpx 80rpx;
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
+  border-radius: 50rpx;
+  font-size: 30rpx;
+  color: white;
+  font-weight: 500;
 }

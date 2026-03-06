@@ -15,18 +15,6 @@ Page({
   },
 
   async onShow() {
-    // 信息不完整时跳回首页（首页会弹窗）
-    if (!app.isProfileComplete()) {
-      wx.switchTab({ url: '/pages/MainPage/index' })
-      return
-    }
-    const isBound = app.isBound()
-    this.setData({ isBound })
-    // 未绑定时跳转绑定页
-    if (!isBound) {
-      wx.navigateTo({ url: '/pages/Bind/index' })
-      return
-    }
     app.setKitchenTitle()
     await this.loadUserInfo()
     await this.loadOrders(true)
