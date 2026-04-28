@@ -1,9 +1,0 @@
-{
-  "name": "unbindPartner",
-  "version": "1.0.0",
-  "description": "Unbind partner",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "^2.6.3"
-  }
-}
