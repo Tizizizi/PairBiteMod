@@ -41,16 +41,16 @@
 | 🔒 完全私密 | 体验版+白名单，仅两人可用 |
 
 <p>
-  <img src="images/1.jpg" width="280" />
-  <img src="images/2.jpg" width="280" />
-  <img src="images/3.jpg" width="280" />
-  <img src="images/4.jpg" width="280" />
+  <img src="images/1.jpg" width="180" />
+  <img src="images/2.jpg" width="180" />
+  <img src="images/3.jpg" width="180" />
+  <img src="images/4.jpg" width="180" />
 </p>
 <p>
-  <img src="images/5.jpg" width="280" />
-  <img src="images/6.jpg" width="280" />
-  <img src="images/7.jpg" width="280" />
-  <img src="images/8.jpg" width="280" />
+  <img src="images/5.jpg" width="180" />
+  <img src="images/6.jpg" width="180" />
+  <img src="images/7.jpg" width="180" />
+  <img src="images/8.jpg" width="180" />
 </p>
 
 ### 技术特点
@@ -286,8 +286,8 @@ Category
 - 须注明原作者
 
 ## 致谢
-*PairBite-mod · 基于 PairBite 开源项目二次开发*
 
 本项目基于 [PairBite](https://github.com/630999Steven/PairBite) 二次开发，感谢原作者 [@630999Steven](https://github.com/630999Steven) 的开源贡献。
+*PairBite-mod · 基于 PairBite 开源项目，在Claude指导下二次开发*
 
 *祝你们用餐愉快 🍽️💕*
