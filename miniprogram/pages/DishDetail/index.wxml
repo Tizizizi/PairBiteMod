@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- 菜品图片 -->
+  <view class="dish-image-wrapper">
+    <image class="dish-image" wx:if="{{dish.imageUrl || previewImageUrl}}" src="{{dish.imageUrl || previewImageUrl}}" mode="widthFix"></image>
+    <image class="dish-image" wx:else src="/images/dishes-empty.gif" mode="widthFix"></image>
+  </view>
+
+  <!-- 菜品信息卡片 -->
+  <view class="dish-info-card">
+    <view class="dish-name">{{dish.name}}</view>
+
+    <view class="info-row">
+      <text class="info-icon">👤</text>
+      <text class="info-label">添加者</text>
+      <text class="info-value">{{creatorName}}</text>
+    </view>
+
+    <view class="info-row">
+      <text class="info-icon">📅</text>
+      <text class="info-label">添加时间</text>
+      <text class="info-value">{{dateText}}</text>
+    </view>
+
+    <!-- 修改者信息 -->
+    <view class="info-row" wx:if="{{dish.modifiedBy}}">
+      <text class="info-icon">✏️</text>
+      <text class="info-label">修改者</text>
+      <text class="info-value">{{modifierName}}</text>
+    </view>
+
+    <view class="info-row" wx:if="{{dish.modifiedTime}}">
+      <text class="info-icon">🕐</text>
+      <text class="info-label">修改时间</text>
+      <text class="info-value">{{modifiedTimeText}}</text>
+    </view>
+
+    <view class="info-row" wx:if="{{dish.description}}">
+      <text class="info-icon">📝</text>
+      <text class="info-label">描述</text>
+      <text class="info-value">{{dish.description}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <view class="btn-edit" bindtap="editDish">
+      <text>编辑菜品</text>
+    </view>
+    <view class="btn-delete" bindtap="deleteDish">
+      <text>删除菜品</text>
+    </view>
+  </view>
+</view>
+<bind-guard />

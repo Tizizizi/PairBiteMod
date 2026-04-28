@@ -1,0 +1,150 @@
+<view class="container">
+  <view class="page-header">
+    <view class="page-header-text">
+      <text class="page-title">点菜历史</text>
+      <text class="page-subtitle">和{{partnerName}}一起的美食记录 ~</text>
+    </view>
+    <image class="header-mascot" src="/images/history-empty.gif" mode="aspectFit" wx:if="{{allOrders.length > 0}}"></image>
+  </view>
+  
+  <!-- 搜索框 -->
+  <view class="search-section" wx:if="{{allOrders.length > 0}}">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索菜品名..." value="{{searchKey}}" bindinput="onSearchInput" />
+      <text class="search-clear" wx:if="{{searchKey}}" bindtap="clearSearch">✕</text>
+    </view>
+  </view>
+
+  <!-- 筛选+排序栏 -->
+  <view class="filter-sort-bar" wx:if="{{allOrders.length > 0}}">
+    <view class="bar-item {{filterType ? 'active' : ''}}" bindtap="toggleFilterPanel">
+      <text>{{filterLabel}}</text>
+      <text class="bar-arrow">{{showFilterPanel ? '▲' : '▼'}}</text>
+    </view>
+    <view class="bar-divider"></view>
+    <view class="bar-item active" bindtap="toggleSortPanel">
+      <text>{{sortLabel}}</text>
+      <text class="bar-arrow">{{showSortPanel ? '▲' : '▼'}}</text>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
+  <view class="dropdown-mask" wx:if="{{showFilterPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showFilterPanel}}">
+    <view class="dropdown-section">
+      <text class="dropdown-title">按分类</text>
+      <!-- 无二级类目的一级分类：一行多个 -->
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCategoryId === item._id ? 'active' : ''}}"
+              wx:for="{{parentCats}}" wx:key="_id" wx:if="{{!childrenMap[item._id] || childrenMap[item._id].length === 0}}"
+              data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+      </view>
+      <!-- 有二级类目的一级分类：独占一行，默认展开 -->
+      <view wx:for="{{parentCats}}" wx:key="_id" wx:if="{{childrenMap[item._id] && childrenMap[item._id].length > 0}}" class="filter-parent-block">
+        <view class="dropdown-tag parent-tag {{filterCategoryId === item._id ? 'active' : ''}}" data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+        <view class="filter-children-inline">
+          <view class="dropdown-tag child-tag {{filterCategoryId === child._id ? 'active' : ''}}" wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:key="_id" data-id="{{child._id}}" bindtap="selectCategoryFilter">{{child.icon}} {{child.name}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="dropdown-section">
+      <text class="dropdown-title">按用餐情况</text>
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterMealStatus === 'done' ? 'active' : ''}}" data-status="done" bindtap="selectMealStatusFilter">已用餐</view>
+        <view class="dropdown-tag {{filterMealStatus === 'pending' ? 'active' : ''}}" data-status="pending" bindtap="selectMealStatusFilter">待用餐</view>
+      </view>
+    </view>
+    <view class="dropdown-section">
+      <text class="dropdown-title">按下单者</text>
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCreator === 'me' ? 'active' : ''}}" data-who="me" bindtap="selectCreatorFilter">{{myNickname}}</view>
+        <view class="dropdown-tag {{filterCreator === 'partner' ? 'active' : ''}}" data-who="partner" bindtap="selectCreatorFilter">{{partnerNickname}}</view>
+      </view>
+    </view>
+    <view class="dropdown-clear" bindtap="clearFilter" wx:if="{{filterType}}">清除筛选</view>
+  </view>
+
+  <!-- 排序面板 -->
+  <view class="dropdown-mask" wx:if="{{showSortPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showSortPanel}}">
+    <view class="dropdown-sort-item {{sortOrder === 'desc' ? 'active' : ''}}" data-order="desc" bindtap="selectSort">
+      <text>最新优先</text><text class="sort-arrow" wx:if="{{sortOrder === 'desc'}}">✓</text>
+    </view>
+    <view class="dropdown-sort-item {{sortOrder === 'asc' ? 'active' : ''}}" data-order="asc" bindtap="selectSort">
+      <text>最早优先</text><text class="sort-arrow" wx:if="{{sortOrder === 'asc'}}">✓</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{allOrders.length === 0 && !loading}}">
+    <image class="empty-image" src="/images/history-empty.gif" mode="aspectFit"></image>
+    <text class="empty-title">还没有点菜记录</text>
+    <text class="empty-desc">快去点菜吧~</text>
+  </view>
+
+  <!-- 历史列表 -->
+  <view class="history-list" wx:if="{{orders.length > 0}}">
+    <mp-slideview wx:for="{{orders}}" wx:key="_id" buttons="{{item.slideButtons}}" data-id="{{item._id}}" data-marked="{{item.marked}}" bindbuttontap="onSlideButtonTap">
+      <view class="history-item animate-fadeIn {{item.marked ? 'marked' : ''}}" data-id="{{item._id}}" bindtap="goToDetail">
+        <view class="history-header">
+          <view class="history-date">
+            <text class="date-icon">📅</text>
+            <text class="date-text">{{item.dateText}}</text>
+          </view>
+          <view class="header-right">
+            <view class="meal-status {{item.hasFinishedPhoto ? 'status-done' : 'status-pending'}}">
+              <text>{{item.hasFinishedPhoto ? '已用餐 ✅' : '待用餐 🍽️'}}</text>
+            </view>
+            <text class="history-time">{{item.timeText}}</text>
+          </view>
+        </view>
+        <view class="history-dishes">
+          <view class="history-dish" wx:for="{{item.dishes}}" wx:for-item="dish" wx:key="_id">
+            <image class="history-dish-image" wx:if="{{!dish.imageUrl}}" src="/images/history-empty.gif" mode="aspectFill"></image>
+            <image class="history-dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill"></image>
+            <text class="history-dish-name">{{dish.name}}{{dish.optionsText ? '(' + dish.optionsText + ')' : ''}}</text>
+          </view>
+        </view>
+        <view class="history-remark" wx:if="{{item.remark}}">
+          <text class="remark-icon">💬</text>
+          <text class="remark-text">{{item.remark}}</text>
+        </view>
+        <view class="history-footer">
+          <text class="history-creator">{{item.creatorName}} 点的菜</text>
+          <view class="footer-right">
+            <view class="note-badge" wx:if="{{item.noteCount > 0}}">
+              <text class="note-badge-icon">💬</text>
+              <text class="note-badge-count">{{item.noteCount}}</text>
+            </view>
+            <text class="dish-count">共 {{item.dishes.length}} 道</text>
+          </view>
+        </view>
+      </view>
+    </mp-slideview>
+  </view>
+
+  <!-- 无搜索/筛选结果 -->
+  <view class="no-result" wx:if="{{allOrders.length > 0 && orders.length === 0}}">
+    <text>没有找到符合条件的记录</text>
+  </view>
+
+  <view class="load-more" wx:if="{{hasMore && !loading && allOrders.length > 0}}" bindtap="loadMore"><text>加载更多</text></view>
+  <view class="no-more" wx:if="{{allOrders.length > 0 && !hasMore && orders.length > 0}}">
+	<text class="no-more-center">~ 已经到底啦 ~</text>
+    <text class="total-count">共计 {{allOrders.length}} 单</text>
+    <view class="history-bottom-blessing">
+      <image class="bottom-mascot" src="/images/mascot.gif" mode="aspectFit"></image>
+      <text class="bottom-text">一二布布祝你们用餐愉快 ~</text>
+    </view>
+  </view>
+
+  <view class="tip-modal" wx:if="{{showTipModal}}" bindtap="closeTipModal">
+    <view class="tip-content" catchtap="preventClose">
+      <image class="tip-image" src="/images/7b4bee27a7ccb84274ec7753e54c50c7.gif" mode="aspectFit"></image>
+      <text class="tip-text">{{tipText}}</text>
+      <view class="tip-btn" bindtap="closeTipModal">知道啦~</view>
+    </view>
+  </view>
+</view>
+<bind-guard />

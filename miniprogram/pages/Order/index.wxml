@@ -1,0 +1,184 @@
+<view class="container">
+  <view class="page-header">
+    <view class="page-header-text">
+      <text class="page-title">今天吃什么？</text>
+      <text class="page-subtitle">选好菜品，通知{{partnerName}}~</text>
+    </view>
+    <image class="header-mascot" src="/images/order-empty.gif" mode="aspectFit" wx:if="{{dishes.length > 0}}"></image>
+  </view>
+
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索菜品" value="{{searchKey}}" bindinput="onSearchInput" confirm-type="search" />
+      <text class="search-clear" wx:if="{{searchKey}}" bindtap="clearSearch">✕</text>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{dishes.length === 0 && !loading}}">
+    <image class="empty-image" src="/images/order-empty.gif" mode="aspectFit"></image>
+    <text class="empty-title">菜品库还是空的</text>
+    <text class="empty-desc">先去添加一些菜品吧~</text>
+    <view class="btn-primary" bindtap="goToDishes">去添加菜品</view>
+  </view>
+
+  <view class="menu-container" wx:if="{{dishes.length > 0}}">
+    <scroll-view class="category-list" scroll-y scroll-with-animation scroll-into-view="{{categoryScrollId}}">
+      <view class="category-item {{currentCategory === item._id ? 'active' : ''}}"
+            wx:for="{{parentCats}}" wx:key="_id" id="catleft-{{item._id}}"
+            data-id="{{item._id}}" bindtap="selectCategory">
+        <text class="category-icon">{{item.icon}}</text>
+        <text class="category-name">{{item.name}}</text>
+        <text class="category-count" wx:if="{{selectedByCategory[item._id]}}">{{selectedByCategory[item._id]}}</text>
+      </view>
+    </scroll-view>
+
+    <scroll-view class="dish-list" scroll-y scroll-with-animation scroll-into-view="{{dishScrollId}}" bindscroll="onDishScroll">
+      <view wx:for="{{parentCats}}" wx:key="_id" wx:if="{{categoryCount[item._id] > 0}}">
+        <view class="category-header" id="parent-{{item._id}}">
+          <text class="category-header-icon">{{item.icon}}</text>
+          <text class="category-header-name">{{item.name}}</text>
+        </view>
+        <block wx:if="{{childrenMap[item._id].length > 0}}">
+          <block wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:key="_id">
+            <view class="subcategory-header" wx:if="{{dishesByCategory[child._id].length > 0}}">
+              <text class="subcategory-icon">{{child.icon}}</text>
+              <text class="subcategory-name">{{child.name}}</text>
+            </view>
+            <view class="dish-item {{dish.selected ? 'selected' : ''}}" wx:for="{{dishesByCategory[child._id]}}" wx:for-item="dish" wx:key="_id" data-id="{{dish._id}}" bindtap="toggleSelect">
+              <image class="dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
+              <image class="dish-image" wx:else src="/images/order-empty.gif" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
+              <view class="dish-info">
+                <text class="dish-name">{{dish.name}}</text>
+                <view class="dish-meta">
+                  <text class="dish-desc" wx:if="{{dish.description}}">"{{dish.description}}"</text>
+                  <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
+                </view>
+                <text class="dish-options-text" wx:if="{{dish.optionsText}}">{{dish.optionsText}}</text>
+              </view>
+              <view class="dish-check {{dish.selected ? 'checked' : ''}}"><text wx:if="{{dish.selected}}">✓</text></view>
+            </view>
+          </block>
+        </block>
+        <block wx:else>
+          <view class="dish-item {{dish.selected ? 'selected' : ''}}" wx:for="{{dishesByCategory[item._id]}}" wx:for-item="dish" wx:key="_id" data-id="{{dish._id}}" bindtap="toggleSelect">
+            <image class="dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
+            <image class="dish-image" wx:else src="/images/order-empty.gif" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
+            <view class="dish-info">
+              <text class="dish-name">{{dish.name}}</text>
+              <view class="dish-meta">
+                <text class="dish-desc" wx:if="{{dish.description}}">"{{dish.description}}"</text>
+                <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
+              </view>
+              <text class="dish-options-text" wx:if="{{dish.optionsText}}">{{dish.optionsText}}</text>
+            </view>
+            <view class="dish-check {{dish.selected ? 'checked' : ''}}"><text wx:if="{{dish.selected}}">✓</text></view>
+          </view>
+        </block>
+      </view>
+      <view class="list-bottom">~ 已经到底啦 ~</view>
+    </scroll-view>
+  </view>
+
+  <view class="footer" wx:if="{{dishes.length > 0}}">
+    <view class="footer-cart" bindtap="toggleCartPanel">
+      <view class="cart-icon-wrap">
+        <image class="cart-icon-img" src="/images/cart-icon.png" mode="aspectFit"></image>
+        <text class="cart-badge" wx:if="{{selectedCount > 0}}">{{selectedCount}}</text>
+      </view>
+      <text class="cart-hint" wx:if="{{selectedCount === 0}}">请选择菜品</text>
+      <text class="cart-hint" wx:else>已选{{selectedCount}}道菜</text>
+    </view>
+    <view class="btn-order {{selectedCount > 0 ? 'active' : ''}}" bindtap="submitOrder">确认点菜</view>
+  </view>
+</view>
+
+<!-- 已选菜品面板 -->
+<view class="cart-panel-mask" wx:if="{{showCartPanel}}" bindtap="toggleCartPanel"></view>
+<view class="cart-panel {{showCartPanel ? 'show' : ''}}">
+  <view class="cart-panel-header">
+    <text class="cart-panel-title">已选菜品</text>
+    <view class="cart-clear" bindtap="clearCart" wx:if="{{selectedCount > 0}}"><text>清空</text></view>
+  </view>
+  <scroll-view class="cart-panel-list" scroll-y style="width: 100%;">
+    <view class="cart-empty" wx:if="{{selectedCount === 0}}"><text>还没有选择菜品哦~</text></view>
+    <view class="cart-item" wx:for="{{selectedDishes}}" wx:key="_id">
+      <image class="cart-item-image" wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
+      <image class="cart-item-image" wx:else src="/images/order-empty.gif" mode="aspectFill"></image>
+      <view class="cart-item-info">
+        <text class="cart-item-name">{{item.name}}</text>
+        <text class="cart-item-options" wx:if="{{item.optionsText}}">{{item.optionsText}}</text>
+      </view>
+      <view class="cart-item-remove" data-id="{{item._id}}" catchtap="removeFromCart"><text>✕</text></view>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 备注弹窗 -->
+<view class="remark-modal" wx:if="{{showRemarkModal}}" bindtap="closeRemarkModal">
+  <view class="remark-content" catchtap="preventClose">
+    <view class="remark-close" bindtap="closeRemarkModal">✕</view>
+    <text class="remark-title">添加备注</text>
+    <text class="remark-hint">给对方留句话吧~（最多100字）</text>
+    <textarea class="remark-input" placeholder="例如：今天想吃清淡点~" bindinput="onRemarkInput" value="{{remark}}"></textarea>
+    <view class="remark-counter">{{remark.length}}/100</view>
+    <view class="remark-buttons">
+      <view class="btn-skip" bindtap="skipRemark">跳过</view>
+      <view class="btn-confirm" bindtap="confirmRemark">确认</view>
+    </view>
+  </view>
+</view>
+
+<!-- 成功弹窗 -->
+<view class="success-modal" wx:if="{{showSuccess}}">
+  <view class="success-content">
+    <image class="success-image" src="/images/loading.gif" mode="aspectFit"></image>
+    <text class="success-title">点菜成功！</text>
+    <text class="success-desc">已通知{{partnerName}}啦~</text>
+    <view class="btn-primary" bindtap="closeSuccess">好的</view>
+  </view>
+</view>
+
+<!-- 菜品详情面板（含选项组） -->
+<view class="detail-panel-mask" wx:if="{{showDishDetail}}" bindtap="closeDishDetail"></view>
+<view class="detail-panel {{showDishDetail && !detailClosing ? 'show' : ''}} {{detailTranslateY > 0 ? 'dragging' : ''}}"
+      style="{{detailTranslateY > 0 ? 'transform: translateY(' + detailTranslateY + 'px)' : ''}}"
+      bindtouchstart="onDetailTouchStart" bindtouchmove="onDetailTouchMove" bindtouchend="onDetailTouchEnd">
+  <view class="detail-panel-content" wx:if="{{currentDish}}">
+    <view class="detail-image-wrapper">
+      <view class="detail-pull-hint" catchtap="closeDishDetail"><view class="pull-chevron"></view></view>
+      <image class="detail-dish-image" wx:if="{{currentDish.imageUrl}}" src="{{currentDish.imageUrl}}" mode="widthFix"></image>
+      <image class="detail-dish-image" wx:else src="/images/order-empty.gif" mode="widthFix"></image>
+    </view>
+    <view class="detail-dish-info">
+      <text class="detail-dish-name">{{currentDish.name}}</text>
+      <view class="detail-dish-meta">
+        <text class="detail-dish-count" wx:if="{{currentDish.orderCount > 0}}">已点{{currentDish.orderCount}}次</text>
+        <text class="detail-dish-desc" wx:if="{{currentDish.description}}">{{currentDish.description}}</text>
+      </view>
+    </view>
+
+    <!-- 选项组单选 -->
+    <view class="detail-options" wx:if="{{currentDish.optionGroups && currentDish.optionGroups.length > 0}}">
+      <view class="detail-option-group" wx:for="{{currentDish.optionGroups}}" wx:key="name">
+        <text class="detail-option-title">{{item.name}}</text>
+        <view class="detail-option-list">
+          <view class="detail-option-item {{tempOptions[item.name] === opt ? 'checked' : ''}}"
+                wx:for="{{item.options}}" wx:for-item="opt" wx:key="*this"
+                data-group="{{item.name}}" data-option="{{opt}}" bindtap="selectOption">
+            <view class="detail-option-radio {{tempOptions[item.name] === opt ? 'checked' : ''}}"></view>
+            <text>{{opt}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="detail-action">
+      <view class="btn-detail-toggle {{currentDish.selected ? 'remove' : 'add'}}" bindtap="toggleDishInDetail">
+        <text>{{currentDish.selected ? '移出菜单' : '加入菜单'}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<bind-guard />

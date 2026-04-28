@@ -1,0 +1,129 @@
+<view class="container" wx:if="{{order}}">
+  <!-- 头部信息 -->
+  <view class="header-card">
+    <view class="header-row">
+      <text class="header-date">{{order.dateText}}</text>
+      <text class="header-time">{{order.timeText}}</text>
+    </view>
+    <view class="header-creator">{{order.creatorName}}点的菜</view>
+  </view>
+
+  <!-- 菜品列表 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-icon">🍽️</text>
+      <text>菜品清单</text>
+      <text class="dish-total">共{{order.dishes.length}}道</text>
+    </view>
+    <view class="dish-list">
+      <view class="dish-item" wx:for="{{order.dishes}}" wx:key="_id">
+        <image class="dish-image" wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
+        <image class="dish-image" wx:else src="/images/order-empty.gif" mode="aspectFill"></image>
+        <text class="dish-name">{{item.name}}</text>
+        <text style="font-size:22rpx;color:#FF9800;display:block;margin-top:4rpx;" wx:if="{{item.optionsText}}">{{item.optionsText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 点菜备注 -->
+  <view class="section" wx:if="{{order.remark}}">
+    <view class="section-title">
+      <text class="section-icon">💬</text>
+      <text>备注</text>
+    </view>
+    <view class="remark-card">
+      <text class="remark-text">{{order.remark}}</text>
+    </view>
+  </view>
+
+  <!-- 成品照片（多张） -->
+  <view class="section photo-section">
+    <view class="section-title">
+      <text class="section-icon">📸</text>
+      <text>成品照片</text>
+      <text class="photo-tip" wx:if="{{order.finishedPhotos.length === 0}}">记录美味时刻</text>
+    </view>
+
+    <!-- 已有照片列表 -->
+    <view wx:if="{{order.finishedPhotos.length > 0}}" class="photos-grid">
+      <view class="photo-card" wx:for="{{order.finishedPhotos}}" wx:key="url" wx:for-index="idx">
+        <image class="finished-photo" src="{{item.url}}" mode="aspectFill" data-index="{{idx}}" bindtap="previewPhoto"></image>
+        <view class="photo-meta">
+          <text class="photo-meta-uploader">{{item.uploaderName}} 上传</text>
+          <text class="photo-meta-time" wx:if="{{item.timeText}}">{{item.timeText}}</text>
+        </view>
+        <view class="photo-delete-btn" data-index="{{idx}}" catchtap="deletePhoto">
+          <text>✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 继续上传按钮 -->
+    <view class="photo-upload" bindtap="uploadPhoto">
+      <view class="upload-icon">📷</view>
+      <text class="upload-text">{{order.finishedPhotos.length > 0 ? '继续添加照片' : '拍一张做好的菜'}}</text>
+      <text class="upload-hint">点击上传照片（可多选）</text>
+    </view>
+  </view>
+
+  <!-- 用餐感想（多条） -->
+  <view class="section notes-section">
+    <view class="section-title">
+      <text class="section-icon">📝</text>
+      <text>用餐感想</text>
+      <view class="add-note-btn" bindtap="startWriteNote" wx:if="{{!isWritingNote}}">
+        <text>写感想</text>
+      </view>
+    </view>
+
+    <!-- 已有感想列表 -->
+    <view class="notes-list" wx:if="{{order.mealNotes.length > 0}}">
+      <view class="note-card" wx:for="{{order.mealNotes}}" wx:key="time" wx:for-index="idx">
+        <view class="note-header">
+          <text class="note-author">{{item.authorName}}</text>
+          <text class="note-time">{{item.timeText}}</text>
+        </view>
+        <view class="note-content">
+          <text>{{item.content}}</text>
+        </view>
+        <view class="note-actions" wx:if="{{item.isMyNote}}">
+          <view class="note-action-btn" data-index="{{idx}}" catchtap="editNote">编辑</view>
+          <view class="note-action-btn delete" data-index="{{idx}}" catchtap="deleteNote">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="notes-empty" wx:if="{{order.mealNotes.length === 0 && !isWritingNote}}">
+      <text>还没有感想，快来写一条吧~</text>
+    </view>
+
+    <!-- 编辑/新建感想 -->
+    <view class="note-editor" wx:if="{{isWritingNote}}">
+      <textarea
+        class="note-input"
+        value="{{noteContent}}"
+        bindinput="onNoteInput"
+        placeholder="这顿饭味道怎么样？"
+        maxlength="500"
+        auto-height
+        focus="{{true}}"
+      ></textarea>
+      <view class="note-editor-actions">
+        <view class="note-cancel-btn" bindtap="cancelNote">取消</view>
+        <view class="note-save-btn" bindtap="saveNote">发布</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 再来一单按钮 -->
+  <view class="reorder-btn" bindtap="reorder">
+    <text class="reorder-icon">🔄</text>
+    <text>再来一单</text>
+  </view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>
+<bind-guard />

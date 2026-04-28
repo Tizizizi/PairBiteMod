@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "mp-slideview": "../../miniprogram_npm/weui-miniprogram/slideview/slideview"
+  },
+  "navigationBarTitleText": "一二布布小厨房"
+}

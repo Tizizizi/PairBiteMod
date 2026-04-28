@@ -1,0 +1,50 @@
+/* 添加菜品页样式（原有样式 + 选项组样式） */
+
+.container { padding-bottom: 160rpx; }
+.page-header { padding: 40rpx 30rpx; background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%); }
+.page-title { display: block; font-size: 40rpx; font-weight: 600; color: white; margin-bottom: 8rpx; }
+.page-subtitle { font-size: 26rpx; color: rgba(255,255,255,0.9); }
+.form-section { padding: 30rpx 24rpx; }
+.upload-card { background: white; border-radius: 24rpx; overflow: hidden; box-shadow: 0 4rpx 20rpx rgba(124,179,66,0.1); margin-bottom: 30rpx; }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80rpx 40rpx; background: #FAFAFA; border: 4rpx dashed #E8F5E9; }
+.upload-icon { font-size: 80rpx; margin-bottom: 20rpx; }
+.upload-text { font-size: 30rpx; color: #666; margin-bottom: 10rpx; }
+.upload-hint { font-size: 24rpx; color: #999; }
+.preview-image { width: 100%; height: 400rpx; }
+.input-card { background: white; border-radius: 24rpx; padding: 30rpx; box-shadow: 0 4rpx 20rpx rgba(124,179,66,0.1); margin-bottom: 30rpx; }
+.input-label { display: flex; align-items: center; margin-bottom: 20rpx; }
+.label-icon { font-size: 36rpx; margin-right: 12rpx; }
+.label-text { font-size: 30rpx; font-weight: 500; color: #333; }
+.label-optional { font-size: 24rpx; color: #999; font-weight: normal; margin-left: 8rpx; }
+.input-field { width: 100%; font-size: 32rpx; color: #333; padding: 20rpx 0; border-bottom: 2rpx solid #E8F5E9; }
+.input-placeholder { color: #CCC; }
+.input-counter { display: block; text-align: right; font-size: 24rpx; color: #999; margin-top: 12rpx; }
+.picker-value { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; font-size: 32rpx; color: #333; border-bottom: 2rpx solid #E8F5E9; }
+.picker-arrow { font-size: 36rpx; color: #CCC; }
+.footer { position: fixed; bottom: 0; left: 0; right: 0; display: flex; padding: 20rpx 24rpx; padding-bottom: calc(20rpx + env(safe-area-inset-bottom)); background: white; box-shadow: 0 -4rpx 20rpx rgba(0,0,0,0.05); }
+.btn-reset { flex: 1; text-align: center; padding: 28rpx; font-size: 30rpx; color: #666; background: #F5F5F5; border-radius: 50rpx; margin-right: 20rpx; }
+.btn-save { flex: 2; text-align: center; padding: 28rpx; font-size: 30rpx; color: white; background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%); border-radius: 50rpx; font-weight: 500; }
+
+/* ===== 选项组样式 ===== */
+.option-group { background: #F9FBF7; border-radius: 16rpx; padding: 20rpx; margin-bottom: 20rpx; border: 2rpx solid #E8F5E9; }
+.option-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16rpx; }
+.option-group-name { font-size: 28rpx; font-weight: 600; color: #5AC476; }
+.option-group-delete { font-size: 22rpx; color: #E57373; padding: 6rpx 16rpx; background: #FFF5F5; border-radius: 16rpx; }
+
+.option-list { display: flex; flex-direction: column; gap: 12rpx; }
+.option-item { display: flex; align-items: center; padding: 12rpx 16rpx; background: white; border-radius: 12rpx; }
+.option-radio { width: 32rpx; height: 32rpx; border: 3rpx solid #CCC; border-radius: 50%; margin-right: 16rpx; flex-shrink: 0; }
+.option-text { flex: 1; font-size: 28rpx; color: #333; }
+.option-remove { font-size: 24rpx; color: #CCC; padding: 8rpx; }
+
+.add-option-btn { text-align: center; padding: 16rpx; font-size: 24rpx; color: #6FCF97; margin-top: 12rpx; }
+.add-option-row { display: flex; align-items: center; gap: 12rpx; margin-top: 12rpx; }
+.add-option-input { flex: 1; height: 64rpx; background: white; border-radius: 12rpx; padding: 0 16rpx; font-size: 26rpx; border: 2rpx solid #E8F5E9; }
+.add-option-confirm { font-size: 24rpx; color: white; background: #6FCF97; padding: 10rpx 20rpx; border-radius: 12rpx; }
+.add-option-cancel { font-size: 24rpx; color: #999; padding: 10rpx 16rpx; }
+
+.add-group-btn { text-align: center; padding: 20rpx; font-size: 26rpx; color: #6FCF97; border: 2rpx dashed #B8E6C1; border-radius: 16rpx; }
+.add-group-row { display: flex; align-items: center; gap: 12rpx; }
+.add-group-input { flex: 1; height: 72rpx; background: #F5F9F0; border-radius: 12rpx; padding: 0 20rpx; font-size: 28rpx; }
+.add-group-confirm { font-size: 26rpx; color: white; background: #6FCF97; padding: 12rpx 24rpx; border-radius: 12rpx; }
+.add-group-cancel { font-size: 26rpx; color: #999; padding: 12rpx 16rpx; }

@@ -1,0 +1,131 @@
+const app = getApp()
+
+Page({
+  data: {
+    _id: '',
+    dish: null,
+    previewImageUrl: '',
+    dateText: '',
+    creatorName: '',
+    modifierName: '',
+    modifiedTimeText: '',
+    openid: '',
+  },
+
+  onLoad(options) {
+    if (options.id) {
+      this.setData({ _id: options.id })
+    }
+    if (options.imageUrl) {
+      this.setData({ previewImageUrl: decodeURIComponent(options.imageUrl) })
+    }
+  },
+
+  async onShow() {
+    await this.getOpenId()
+    await this.loadDish()
+  },
+
+  async getOpenId() {
+    try {
+      const res = await wx.cloud.callFunction({ name: 'getOpenId' })
+      const openid = res.result?.openid || ''
+      this.setData({ openid })
+    } catch (e) {
+      console.error('获取openid失败', e)
+    }
+  },
+
+  async loadDish() {
+    if (!this.data._id) return
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'getCoupleData',
+        data: {
+          collection: app.globalData.collectionDishList,
+          docId: this.data._id
+        }
+      })
+
+      if (!res.result?.success) {
+        throw new Error(res.result?.message || '加载失败')
+      }
+
+      const dish = res.result.data
+      const updateObj = {
+        dish,
+        dateText: this.formatDate(dish.createTime),
+        creatorName: this.getCreatorName(dish._openid),
+      }
+
+      if (dish.modifiedBy) {
+        updateObj.modifierName = this.getCreatorName(dish.modifiedBy)
+        updateObj.modifiedTimeText = this.formatDate(dish.modifiedTime)
+      }
+      await app.convertFileURLs([dish], ['imageUrl'])
+      this.setData(updateObj)
+      wx.setNavigationBarTitle({ title: dish.name })
+    } catch (e) {
+      console.error('加载菜品失败', e)
+      wx.showToast({ title: '加载失败', icon: 'none' })
+    }
+  },
+
+  getCreatorName(openid) {
+    if (openid === this.data.openid) return '我'
+    return app.getPartnerName(this.data.openid)
+  },
+
+  formatDate(date) {
+    if (!date) return ''
+    const d = new Date(date)
+    if (isNaN(d.getTime())) return ''
+    const year = d.getFullYear()
+    const month = (d.getMonth() + 1).toString().padStart(2, '0')
+    const day = d.getDate().toString().padStart(2, '0')
+    const hours = d.getHours().toString().padStart(2, '0')
+    const minutes = d.getMinutes().toString().padStart(2, '0')
+    return `${year}年${month}月${day}日 ${hours}:${minutes}`
+  },
+
+  editDish() {
+    wx.navigateTo({
+      url: `/pages/DishAdd/index?id=${this.data._id}`
+    })
+  },
+
+  deleteDish() {
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除「${this.data.dish.name}」吗？`,
+      confirmColor: '#E57373',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            const result = await wx.cloud.callFunction({
+              name: 'updateCoupleData',
+              data: {
+                collection: app.globalData.collectionDishList,
+                docId: this.data._id,
+                action: 'remove'
+              }
+            })
+
+            if (!result.result?.success) {
+              throw new Error(result.result?.message || '删除失败')
+            }
+
+            wx.showToast({ title: '已删除', icon: 'success' })
+            setTimeout(() => {
+              wx.navigateBack()
+            }, 1500)
+          } catch (e) {
+            console.error('删除失败', e)
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+})

@@ -1,0 +1,115 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">类目管理</text>
+    <text class="page-subtitle">管理菜品分类（支持二级分类）</text>
+  </view>
+
+  <view class="category-list">
+    <view wx:for="{{parentCats}}" wx:key="_id" wx:for-index="pIdx" class="parent-group">
+      <view class="category-item parent-item">
+        <view class="category-main" bindtap="toggleExpand" data-id="{{item._id}}">
+          <text class="expand-arrow {{expandedId === item._id ? 'expanded' : ''}}">▶</text>
+          <text class="category-icon">{{item.icon}}</text>
+          <text class="category-name">{{item.name}}</text>
+          <text class="child-count" wx:if="{{childrenMap[item._id].length > 0}}">{{childrenMap[item._id].length}}个子分类</text>
+        </view>
+        <view class="category-actions">
+          <view class="sort-arrows">
+            <view class="arrow-btn {{pIdx <= 0 ? 'disabled' : ''}}" catchtap="moveParentUp" data-index="{{pIdx}}">
+              <view class="arrow-up"></view>
+            </view>
+            <view class="arrow-btn {{pIdx >= parentCats.length - 1 ? 'disabled' : ''}}" catchtap="moveParentDown" data-index="{{pIdx}}">
+              <view class="arrow-down"></view>
+            </view>
+          </view>
+          <view class="action-btn edit" catchtap="editCategory" data-id="{{item._id}}">编辑</view>
+          <view class="action-btn delete" catchtap="deleteCategory" data-id="{{item._id}}">删除</view>
+        </view>
+      </view>
+
+      <view class="children-section" wx:if="{{expandedId === item._id}}">
+        <view class="category-item child-item" wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:for-index="cIdx" wx:key="_id">
+          <view class="category-main" bindtap="editCategory" data-id="{{child._id}}">
+            <text class="child-indent">┗</text>
+            <text class="category-icon">{{child.icon}}</text>
+            <text class="category-name">{{child.name}}</text>
+          </view>
+          <view class="category-actions">
+            <view class="sort-arrows">
+              <view class="arrow-btn small {{cIdx <= 0 ? 'disabled' : ''}}" catchtap="moveChildUp" data-index="{{cIdx}}" data-parentid="{{item._id}}">
+                <view class="arrow-up"></view>
+              </view>
+              <view class="arrow-btn small {{cIdx >= childrenMap[item._id].length - 1 ? 'disabled' : ''}}" catchtap="moveChildDown" data-index="{{cIdx}}" data-parentid="{{item._id}}">
+                <view class="arrow-down"></view>
+              </view>
+            </view>
+            <view class="action-btn delete" catchtap="deleteCategory" data-id="{{child._id}}">删除</view>
+          </view>
+        </view>
+        <view class="add-child-btn" bindtap="showAddChildModal" data-parentid="{{item._id}}">
+          <text>+ 添加「{{item.name}}」的子分类</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-tip" wx:if="{{!loading && parentCats.length === 0}}">
+      <text>暂无分类，点击下方按钮添加</text>
+    </view>
+  </view>
+
+  <view class="save-sort-btn" wx:if="{{sortChanged}}" bindtap="saveSortOrder">
+    <text>保存排序</text>
+  </view>
+
+  <view class="add-btn" bindtap="showAddParentModal">
+    <text>+ 添加一级分类</text>
+  </view>
+
+  <!-- 添加/编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" catchtap="closeModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <text class="modal-title">{{editingId ? '编辑分类' : (editingParentId ? '添加子分类' : '添加一级分类')}}</text>
+      <view class="modal-field">
+        <text class="field-label">图标</text>
+        <view class="emoji-grid">
+          <view class="emoji-item {{tempIcon === item ? 'active' : ''}}" wx:for="{{emojiList}}" wx:key="*this" bindtap="selectEmoji" bindlongpress="removeEmoji" data-emoji="{{item}}">{{item}}</view>
+        </view>
+        <view class="custom-emoji-row">
+          <text class="custom-emoji-label">自定义：</text>
+          <input class="custom-emoji-input" placeholder="输入emoji" value="{{customIcon}}" bindinput="onCustomIconInput" maxlength="2" />
+          <view class="custom-emoji-preview" wx:if="{{customIcon}}" bindtap="useCustomIcon">使用 {{customIcon}}</view>
+        </view>
+		<view class="emoji-hint">长按自定义图标可删除</view>
+        <view class="emoji-reset" wx:if="{{hasCustomEmojis}}" bindtap="resetEmojis">重置为默认图标</view>
+      </view>
+      <view class="modal-field">
+        <text class="field-label">名称</text>
+        <input class="field-input" placeholder="分类名称" value="{{tempName}}" bindinput="onNameInput" />
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-btn cancel" bindtap="closeModal">取消</view>
+        <view class="modal-btn confirm" bindtap="saveCategory">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 转移弹窗 -->
+  <view class="modal-mask" wx:if="{{showTransferModal}}" catchtap="closeTransferModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <text class="modal-title">转移菜品</text>
+      <text class="modal-desc">「{{deletingCategory.icon}} {{deletingCategory.name}}」下有 {{deletingDishCount}} 道菜品，请选择转移到的分类：</text>
+      <view class="transfer-list">
+        <view class="transfer-item {{transferTarget === item._id ? 'active' : ''}}" wx:for="{{transferOptions}}" wx:key="_id" bindtap="selectTransferTarget" data-id="{{item._id}}">
+          <text>{{item.parentId ? '┗ ' : ''}}{{item.icon}} {{item.name}}</text>
+        </view>
+      </view>
+      <view class="modal-buttons">
+        <view class="modal-btn cancel" bindtap="closeTransferModal">取消</view>
+        <view class="modal-btn confirm {{!transferTarget ? 'disabled' : ''}}" bindtap="confirmDelete">确认转移并删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+</view>
+<bind-guard />

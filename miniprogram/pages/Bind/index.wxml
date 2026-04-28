@@ -1,0 +1,181 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-back" bindtap="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="nav-title">伴侣绑定</text>
+      <view class="nav-placeholder"></view>
+    </view>
+  </view>
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <block wx:else>
+    <!-- 已绑定状态 -->
+    <block wx:if="{{bindStatus === 'bound'}}">
+      <!-- 情侣头部 -->
+      <view class="couple-header-bound">
+        <view class="couple-avatars">
+          <view class="couple-avatar-wrap">
+            <image class="couple-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+            <text class="couple-name">{{nickname}}</text>
+          </view>
+          <view class="couple-heart-wrap">
+            <view class="couple-heart-beat">🍔</view>
+            <text class="couple-days">{{bindDays}}天</text>
+          </view>
+          <view class="couple-avatar-wrap">
+            <image class="couple-avatar" src="{{partnerAvatarUrl}}" mode="aspectFill"></image>
+            <text class="couple-name">{{partnerNickname}}</text>
+          </view>
+        </view>
+        <text class="couple-slogan">一起吃饭的日子</text>
+      </view>
+
+      <!-- 共同统计 -->
+      <view class="section">
+        <view class="section-title">我们的小厨房</view>
+        <view class="stats-card">
+          <view class="stat-item">
+            <text class="stat-number">{{dishCount}}</text>
+            <text class="stat-label">共同菜品</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-number">{{orderCount}}</text>
+            <text class="stat-label">一起点菜</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-number">{{bindDays}}</text>
+            <text class="stat-label">相伴天数</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 绑定信息 -->
+      <view class="section">
+        <view class="section-title">绑定信息</view>
+        <view class="card">
+          <view class="info-row" bindtap="showKitchenNameModal">
+            <text class="info-label">厨房名称</text>
+            <view class="info-value-wrap">
+              <text class="info-value">{{kitchenName}}</text>
+              <text class="info-arrow">></text>
+            </view>
+          </view>
+          <view class="info-row">
+            <text class="info-label">绑定日期</text>
+            <text class="info-value">{{bindDate}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 温馨提示 -->
+      <view class="section">
+        <view class="tips-card">
+          <view class="tips-header">
+            <text class="tips-icon">💡</text>
+            <text class="tips-title">小贴士</text>
+          </view>
+          <view class="tips-list">
+            <text class="tips-item">· 点菜后对方会收到通知提醒</text>
+            <text class="tips-item">· 菜品库内容双方共享</text>
+            <text class="tips-item">· 可以查看彼此的点菜历史</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 解绑区域 -->
+      <view class="section unbind-section">
+        <view class="unbind-btn-light" bindtap="unbindPartner">解除绑定</view>
+        <text class="unbind-tip">解绑后将无法互相看到点菜记录</text>
+      </view>
+    </block>
+
+    <!-- 未绑定状态 -->
+    <block wx:else>
+      <!-- 页面头部 -->
+      <view class="page-header">
+        <text class="header-emoji">💕</text>
+        <text class="header-title">伴侣绑定</text>
+        <text class="header-subtitle">绑定后可以共享菜品库和点菜记录</text>
+      </view>
+
+      <!-- 我的信息 -->
+      <view class="section">
+        <view class="section-title">我的信息</view>
+        <view class="card">
+          <view class="profile-item">
+            <image class="profile-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+            <view class="profile-info">
+              <text class="profile-name">{{nickname}}</text>
+            </view>
+          </view>
+          <view class="info-item" bindtap="copyInviteCode">
+            <text class="item-label">我的邀请码</text>
+            <view class="item-value-wrap">
+              <text class="item-code">{{inviteCode}}</text>
+              <text class="copy-btn">复制</text>
+            </view>
+          </view>
+        </view>
+        <button class="share-btn" open-type="share">
+          <text class="share-icon">📤</text>
+          <text>邀请TA加入</text>
+        </button>
+        <text class="tip-text">点击上方按钮分享给TA，TA点击即可自动绑定</text>
+      </view>
+
+      <!-- 绑定伴侣 -->
+      <view class="section">
+        <view class="section-title">绑定伴侣</view>
+        <view class="card">
+          <view class="input-wrap">
+            <input
+              class="code-input"
+              placeholder="输入对方的邀请码"
+              value="{{inputCode}}"
+              maxlength="6"
+              bindinput="onInputCode"
+            />
+          </view>
+          <button
+            class="bind-btn {{inputCode.length === 6 ? 'active' : ''}}"
+            bindtap="bindPartner"
+            loading="{{submitting}}"
+          >
+            绑定
+          </button>
+        </view>
+      </view>
+    </block>
+  </block>
+
+  <!-- 修改厨房名称弹窗 -->
+  <view wx:if="{{showKitchenNameModal}}" class="modal-mask" catchtap="hideKitchenNameModal">
+    <view class="modal-content" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">修改厨房名称</text>
+      </view>
+      <view class="modal-body">
+        <input
+          class="kitchen-name-input"
+          placeholder="请输入厨房名称"
+          value="{{tempKitchenName}}"
+          bindinput="onKitchenNameInput"
+          focus="{{showKitchenNameModal}}"
+        />
+        <text class="input-tip">最多8个字，双方同步显示</text>
+      </view>
+      <view class="modal-footer">
+        <view class="modal-btn cancel" bindtap="hideKitchenNameModal">取消</view>
+        <view class="modal-btn confirm" bindtap="saveKitchenName">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

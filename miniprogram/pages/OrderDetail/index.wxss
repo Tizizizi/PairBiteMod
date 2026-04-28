@@ -1,0 +1,349 @@
+.container {
+  padding: 24rpx;
+  min-height: 100vh;
+  background: #F5F9F0;
+}
+
+/* 头部卡片 */
+.header-card {
+  background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%);
+  border-radius: 24rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 24rpx;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.header-date {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: white;
+}
+
+.header-time {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-creator {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* 区块 */
+.section {
+  background: white;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(124, 179, 66, 0.1);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 24rpx;
+}
+
+.section-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.dish-total {
+  margin-left: auto;
+  font-size: 26rpx;
+  color: #6FCF97;
+  font-weight: normal;
+}
+
+/* 菜品列表 */
+.dish-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.dish-item {
+  display: flex;
+  align-items: center;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  padding: 16rpx;
+}
+
+.dish-image {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 12rpx;
+  background: #E8F5E9;
+}
+
+.dish-name {
+  flex: 1;
+  margin-left: 20rpx;
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* 备注 */
+.remark-card {
+  background: #FFF9E6;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.remark-text {
+  font-size: 28rpx;
+  color: #996600;
+  line-height: 1.6;
+}
+
+/* 再来一单按钮 */
+.reorder-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
+  color: white;
+  font-size: 32rpx;
+  font-weight: 500;
+  padding: 28rpx;
+  border-radius: 50rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(124, 179, 66, 0.3);
+}
+
+.reorder-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+/* ===== 成品照片 ===== */
+.photo-tip {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #999;
+  font-weight: normal;
+}
+
+.photos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.photo-card {
+  position: relative;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.finished-photo {
+  width: 100%;
+  height: 400rpx;
+  display: block;
+}
+
+.photo-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14rpx 20rpx;
+  background: #F0F7F2;
+}
+
+.photo-meta-uploader {
+  font-size: 24rpx;
+  color: #6FCF97;
+  font-weight: 500;
+}
+
+.photo-meta-time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.photo-delete-btn {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24rpx;
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 30rpx;
+  background: #F5F9F0;
+  border-radius: 16rpx;
+  border: 2rpx dashed #B8E6C1;
+}
+
+.upload-icon {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.upload-hint {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* ===== 用餐感想 ===== */
+.add-note-btn {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #6FCF97;
+  padding: 6rpx 20rpx;
+  border: 2rpx solid #6FCF97;
+  border-radius: 20rpx;
+  font-weight: normal;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.note-card {
+  background: #FAFCF8;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  border-left: 6rpx solid #6FCF97;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.note-author {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #6FCF97;
+}
+
+.note-time {
+  font-size: 22rpx;
+  color: #BBB;
+}
+
+.note-content {
+  font-size: 28rpx;
+  color: #444;
+  line-height: 1.7;
+  padding: 4rpx 0;
+}
+
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #EEE;
+}
+
+.note-action-btn {
+  font-size: 22rpx;
+  color: #999;
+  padding: 6rpx 16rpx;
+  background: #F0F0F0;
+  border-radius: 16rpx;
+}
+
+.note-action-btn.delete {
+  color: #E57373;
+  background: #FFF5F5;
+}
+
+.notes-empty {
+  text-align: center;
+  padding: 30rpx;
+  color: #CCC;
+  font-size: 26rpx;
+}
+
+/* 编辑框 */
+.note-editor {
+  background: #FAFCF8;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-top: 16rpx;
+}
+
+.note-input {
+  width: 100%;
+  min-height: 120rpx;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.7;
+  padding: 16rpx;
+  background: white;
+  border: 2rpx solid #E4EDE6;
+  border-radius: 12rpx;
+  box-sizing: border-box;
+}
+
+.note-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+
+.note-cancel-btn {
+  font-size: 26rpx;
+  color: #999;
+  padding: 12rpx 30rpx;
+  background: #F5F5F5;
+  border-radius: 24rpx;
+}
+
+.note-save-btn {
+  font-size: 26rpx;
+  color: white;
+  padding: 12rpx 30rpx;
+  background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%);
+  border-radius: 24rpx;
+}
+
+/* 加载中 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  color: #999;
+  font-size: 28rpx;
+}

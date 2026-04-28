@@ -1,0 +1,121 @@
+<view class="container">
+  <view class="page-header">
+    <view class="page-header-text">
+      <text class="page-title">菜品库</text>
+      <text class="page-subtitle">和{{partnerName}}一起管理你们的菜单 ~</text>
+    </view>
+    <image class="header-mascot" src="/images/dishes-empty.gif" mode="aspectFit" wx:if="{{dishes.length > 0}}"></image>
+  </view>
+
+  <view class="search-section">
+    <view class="search-bar">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索菜品..." bindinput="onSearch" value="{{search}}" />
+    </view>
+  </view>
+
+  <view class="filter-sort-bar" wx:if="{{dishes.length > 0}}">
+    <view class="bar-item {{filterType ? 'active' : ''}}" bindtap="toggleFilterPanel">
+      <text>{{filterLabel}}</text>
+      <text class="bar-arrow">{{showFilterPanel ? '▲' : '▼'}}</text>
+    </view>
+    <view class="bar-divider"></view>
+    <view class="bar-item active" bindtap="toggleSortPanel">
+      <text>{{sortLabel}}</text>
+      <text class="bar-arrow">{{showSortPanel ? '▲' : '▼'}}</text>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
+  <view class="dropdown-mask" wx:if="{{showFilterPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showFilterPanel}}">
+	<view class="dropdown-section">
+      <text class="dropdown-title">按分类</text>
+      <!-- 无二级类目的一级分类：一行多个 -->
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCategoryId === item._id ? 'active' : ''}}"
+              wx:for="{{parentCats}}" wx:key="_id" wx:if="{{!childrenMap[item._id] || childrenMap[item._id].length === 0}}"
+              data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+      </view>
+      <!-- 有二级类目的一级分类：独占一行，默认展开 -->
+      <view wx:for="{{parentCats}}" wx:key="_id" wx:if="{{childrenMap[item._id] && childrenMap[item._id].length > 0}}" class="filter-parent-block">
+        <view class="dropdown-tag parent-tag {{filterCategoryId === item._id ? 'active' : ''}}" data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+        <view class="filter-children-inline">
+          <view class="dropdown-tag child-tag {{filterCategoryId === child._id ? 'active' : ''}}" wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:key="_id" data-id="{{child._id}}" bindtap="selectCategoryFilter">{{child.icon}} {{child.name}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="dropdown-section">
+      <text class="dropdown-title">按添加者</text>
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCreator === 'me' ? 'active' : ''}}" data-who="me" bindtap="selectCreatorFilter">{{myNickname}}</view>
+        <view class="dropdown-tag {{filterCreator === 'partner' ? 'active' : ''}}" data-who="partner" bindtap="selectCreatorFilter">{{partnerNickname}}</view>
+      </view>
+    </view>
+    <view class="dropdown-clear" bindtap="clearFilter" wx:if="{{filterType}}">清除筛选</view>
+  </view>
+
+  <!-- 排序面板（只有添加日期和点菜次数） -->
+  <view class="dropdown-mask" wx:if="{{showSortPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showSortPanel}}">
+    <view class="dropdown-sort-item {{sortField === 'createTime' ? 'active' : ''}}" data-field="createTime" bindtap="selectSort">
+      <text>添加日期</text><text class="sort-arrow" wx:if="{{sortField === 'createTime'}}">{{sortOrder === 'desc' ? '↓ 最新' : '↑ 最早'}}</text>
+    </view>
+    <view class="dropdown-sort-item {{sortField === 'orderCount' ? 'active' : ''}}" data-field="orderCount" bindtap="selectSort">
+      <text>点菜次数</text><text class="sort-arrow" wx:if="{{sortField === 'orderCount'}}">{{sortOrder === 'desc' ? '↓ 最多' : '↑ 最少'}}</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{dishes.length === 0 && !loading}}">
+    <image class="empty-image" src="/images/dishes-empty.gif" mode="aspectFit"></image>
+    <text class="empty-title">菜品库空空如也</text>
+    <text class="empty-desc">快添加你们喜欢的菜品吧！</text>
+    <view class="btn-primary" bindtap="toAddPage">添加第一道菜</view>
+  </view>
+
+  <!-- 菜品列表 -->
+  <view class="dish-grid" wx:if="{{dishes.length > 0}}">
+    <view class="dish-card" wx:for="{{filteredDishes}}" wx:key="_id"
+          data-id="{{item._id}}" bindtap="toDetailPage" bindlongpress="showDeleteConfirm">
+      <image class="dish-card-image" wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
+      <image class="dish-card-image" wx:else src="/images/dishes-empty.gif" mode="aspectFill"></image>
+      <view class="dish-card-info">
+        <!-- 第一行：菜名 + 分类标签 + 已点次数 -->
+        <view class="card-row-1">
+          <text class="dish-card-name">{{item.name}}</text>
+          <view class="card-row-1-tags">
+            <text class="card-tag" wx:for="{{item.categoryLabels}}" wx:for-item="label" wx:key="text">{{label.text}}</text>
+            <text class="card-order-tag" wx:if="{{item.orderCount > 0}}">已点{{item.orderCount}}次</text>
+          </view>
+        </view>
+        <!-- 第二行：添加者昵称 + 添加时间 -->
+        <view class="card-row-2">
+          <text class="card-creator">{{item.creatorNickname}}</text>
+          <text class="card-time">{{item.createTimeText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="no-more" wx:if="{{allDishes.length > 0 && !hasMore && filteredDishes.length > 0}}">
+    <text class="no-more-text">~ 已经到底啦 ~</text>
+    <text class="total-count">共计 {{filteredDishes.length}} 个菜品</text>
+    <view class="dishes-bottom-blessing">
+      <image class="bottom-mascot" src="/images/mascot.gif" mode="aspectFit"></image>
+      <text class="bottom-text">一二布布祝你们用餐愉快 ~</text>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading && allDishes.length > 0}}" bindtap="loadMore">
+    <text>加载更多</text>
+  </view>
+  
+  <view class="no-result" wx:if="{{dishes.length > 0 && filteredDishes.length === 0}}">
+    <text class="no-result-text">没有找到符合条件的菜品</text>
+  </view>
+
+  <view class="fab" bindtap="toAddPage"><text class="fab-text">+</text></view>
+</view>
+<bind-guard />

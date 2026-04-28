@@ -1,0 +1,88 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">{{isEdit ? '编辑菜品' : '添加菜品'}}</text>
+    <text class="page-subtitle">{{isEdit ? '修改菜品信息' : '给小厨房添加新成员 ~'}}</text>
+  </view>
+
+  <view class="form-section">
+    <view class="upload-card" bindtap="chooseImage">
+      <image wx:if="{{imageUrl}}" class="preview-image" src="{{imageUrl}}" mode="aspectFill"></image>
+      <view wx:else class="upload-placeholder">
+        <text class="upload-icon">📷</text>
+        <text class="upload-text">点击上传菜品图片</text>
+        <text class="upload-hint">支持从相册选择或拍照</text>
+      </view>
+    </view>
+
+    <view class="input-card">
+      <view class="input-label"><text class="label-icon">🍽️</text><text class="label-text">菜品名称</text></view>
+      <input class="input-field" placeholder="给这道菜起个名字吧" placeholderClass="input-placeholder" bindinput="onNameInput" value="{{name}}" />
+      <text class="input-counter">{{name.length}}/20</text>
+    </view>
+
+    <view class="input-card">
+      <view class="input-label"><text class="label-icon">📂</text><text class="label-text">一级分类</text></view>
+      <picker mode="selector" range="{{parentCats}}" range-key="name" value="{{parentIndex}}" bindchange="onParentChange">
+        <view class="picker-value"><text>{{parentCats[parentIndex].icon}} {{parentCats[parentIndex].name}}</text><text class="picker-arrow">›</text></view>
+      </picker>
+    </view>
+
+    <view class="input-card" wx:if="{{currentChildren.length > 0}}">
+      <view class="input-label"><text class="label-icon">📁</text><text class="label-text">二级分类</text></view>
+      <picker mode="selector" range="{{currentChildren}}" range-key="name" value="{{childIndex}}" bindchange="onChildChange">
+        <view class="picker-value"><text>{{currentChildren[childIndex].icon}} {{currentChildren[childIndex].name}}</text><text class="picker-arrow">›</text></view>
+      </picker>
+    </view>
+
+    <!-- ===== 选项设置 ===== -->
+    <view class="input-card option-card">
+      <view class="input-label">
+        <text class="label-icon">⚙️</text>
+        <text class="label-text">选项设置</text>
+        <text class="label-optional">（选填）</text>
+      </view>
+
+      <!-- 已添加的选项组 -->
+      <view class="option-group" wx:for="{{optionGroups}}" wx:key="name" wx:for-index="gIdx">
+        <view class="option-group-header">
+          <text class="option-group-name">{{item.name}}</text>
+          <view class="option-group-delete" data-index="{{gIdx}}" catchtap="removeGroup">删除</view>
+        </view>
+        <view class="option-list">
+          <view class="option-item" wx:for="{{item.options}}" wx:for-item="opt" wx:for-index="oIdx" wx:key="*this">
+            <view class="option-radio"></view>
+            <text class="option-text">{{opt}}</text>
+            <view class="option-remove" data-gindex="{{gIdx}}" data-oindex="{{oIdx}}" catchtap="removeOption">✕</view>
+          </view>
+        </view>
+        <!-- 添加选项 -->
+        <view class="add-option-row" wx:if="{{addingOptionIndex === gIdx}}">
+          <input class="add-option-input" placeholder="输入选项名" value="{{newOptionText}}" bindinput="onOptionTextInput" focus="{{true}}" />
+          <view class="add-option-confirm" bindtap="confirmAddOption">添加</view>
+          <view class="add-option-cancel" bindtap="cancelAddOption">取消</view>
+        </view>
+        <view class="add-option-btn" wx:else data-index="{{gIdx}}" bindtap="showAddOptionInput">+ 添加选项</view>
+      </view>
+
+      <!-- 添加新选项组 -->
+      <view class="add-group-row" wx:if="{{showAddGroup}}">
+        <input class="add-group-input" placeholder="输入选项组名称（如：辣度）" value="{{newGroupName}}" bindinput="onGroupNameInput" focus="{{true}}" />
+        <view class="add-group-confirm" bindtap="confirmAddGroup">确定</view>
+        <view class="add-group-cancel" bindtap="hideAddGroupInput">取消</view>
+      </view>
+      <view class="add-group-btn" wx:else bindtap="showAddGroupInput">+ 添加选项组</view>
+    </view>
+
+    <view class="input-card">
+      <view class="input-label"><text class="label-icon">💬</text><text class="label-text">一句话描述</text><text class="label-optional">（选填，最多6字）</text></view>
+      <input class="input-field" placeholder="例如：超下饭" placeholderClass="input-placeholder" bindinput="onDescInput" value="{{description}}" />
+      <text class="input-counter">{{description.length}}/6</text>
+    </view>
+  </view>
+
+  <view class="footer">
+    <view class="btn-reset" bindtap="resetForm">重置</view>
+    <view class="btn-save" bindtap="saveDish">{{isEdit ? '保存修改' : '保存菜品'}}</view>
+  </view>
+</view>
+<bind-guard />

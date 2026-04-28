@@ -1,0 +1,83 @@
+/* 菜品库样式 */
+.container { padding-bottom: 180rpx; }
+.page-header { padding: 40rpx 30rpx 30rpx; background: linear-gradient(135deg, #6FCF97 0%, #B8E6C1 100%); display: flex; align-items: center; justify-content: space-between; }
+.page-title { display: block; font-size: 44rpx; font-weight: 600; color: white; margin-bottom: 8rpx; }
+.page-subtitle { font-size: 26rpx; color: rgba(255,255,255,0.9); }
+/* 更改 */
+.search-section { padding: 24rpx 16rpx 0rpx; margin-top: -20rpx; }
+.search-bar { display: flex; align-items: center; background: white; border-radius: 50rpx; padding: 20rpx 30rpx; box-shadow: 0 4rpx 20rpx rgba(124,179,66,0.15); }
+.search-icon { font-size: 32rpx; margin-right: 16rpx; }
+.search-input { flex: 1; font-size: 28rpx; color: #333; }
+/* 更改 */
+.filter-sort-bar { display: flex; align-items: center; margin: 1rpx 16rpx -17rpx; background: white; border-radius: 16rpx; padding: 0 8rpx; box-shadow: 0 2rpx 12rpx rgba(124,179,66,0.08); }
+.bar-item { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20rpx 0; font-size: 26rpx; color: #666; }
+.bar-item.active { color: #5AC476; font-weight: 500; }
+.bar-arrow { font-size: 18rpx; margin-left: 6rpx; }
+.bar-divider { width: 2rpx; height: 28rpx; background: #E8E8E8; }
+
+.dropdown-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); z-index: 100; }
+.dropdown-panel { position: relative; z-index: 101; margin: 0 16rpx; background: white; border-radius: 0 0 20rpx 20rpx; padding: 24rpx; box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.1); }
+.dropdown-section { margin-bottom: 24rpx; }
+.dropdown-title { display: block; font-size: 24rpx; color: #999; margin-bottom: 16rpx; font-weight: 500; }
+.dropdown-tags { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.dropdown-tag { padding: 12rpx 24rpx; font-size: 26rpx; color: #555; background: #F5F5F5; border-radius: 28rpx; border: 2rpx solid transparent; }
+.dropdown-tag.active { color: #5AC476; background: #E8F5E9; border-color: #6FCF97; }
+.dropdown-tag.child-tag { font-size: 24rpx; padding: 8rpx 20rpx; margin-left: 16rpx; color: #888; background: #FAFAFA; }
+.dropdown-tag.child-tag.active { color: #5AC476; background: #E8F5E9; border-color: #6FCF97; }
+.dropdown-clear { text-align: center; padding: 16rpx; font-size: 26rpx; color: #E57373; }
+.dropdown-sort-item { display: flex; justify-content: space-between; align-items: center; padding: 24rpx 16rpx; font-size: 28rpx; color: #555; border-bottom: 1rpx solid #F5F5F5; }
+.dropdown-sort-item:last-child { border-bottom: none; }
+.dropdown-sort-item.active { color: #5AC476; font-weight: 500; }
+.sort-arrow { font-size: 24rpx; color: #5AC476; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 100rpx 60rpx; }
+.empty-image { width: 300rpx; height: 300rpx; margin-bottom: 40rpx; }
+.empty-title { font-size: 34rpx; font-weight: 500; color: #333; margin-bottom: 16rpx; }
+.empty-desc { font-size: 28rpx; color: #999; margin-bottom: 40rpx; }
+.btn-primary { padding: 24rpx 60rpx; background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%); border-radius: 50rpx; font-size: 30rpx; color: white; font-weight: 500; }
+
+/* ===== 菜品卡片 ===== */
+.dish-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20rpx; padding: 20rpx 20rpx 0; }
+.dish-card { background: white; border-radius: 20rpx; overflow: hidden; box-shadow: 0 4rpx 16rpx rgba(124,179,66,0.08); }
+.dish-card-image { width: 100%; height: 280rpx; background: #F5F9F0; }
+.dish-card-info { padding: 16rpx 18rpx 18rpx; }
+
+/* 第一行：菜名 + 标签 */
+.card-row-1 { margin-bottom: 10rpx; }
+.dish-card-name { display: block; font-size: 30rpx; font-weight: 500; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 8rpx; }
+.card-row-1-tags { display: flex; flex-wrap: wrap; gap: 8rpx; align-items: center; }
+.card-tag { font-size: 20rpx; color: #6FCF97; background: #E8F5E9; padding: 3rpx 12rpx; border-radius: 10rpx; }
+.card-order-tag { font-size: 20rpx; color: #FF9800; background: #FFF3E0; padding: 3rpx 12rpx; border-radius: 10rpx; }
+
+/* 第二行：添加者 + 时间 */
+.card-row-2 { display: flex; justify-content: space-between; align-items: center; }
+.card-creator { font-size: 22rpx; color: #888; }
+.card-time { font-size: 20rpx; color: #BBB; }
+
+.no-result { text-align: center; padding: 60rpx; }
+.no-result-text { font-size: 28rpx; color: #999; }
+
+.fab { position: fixed; right: 40rpx; bottom: calc(120rpx + env(safe-area-inset-bottom)); width: 110rpx; height: 110rpx; border-radius: 50%; background: linear-gradient(135deg, #6FCF97 0%, #5AC476 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 8rpx 30rpx rgba(124,179,66,0.4); z-index: 999; }
+.fab-text { font-size: 56rpx; color: white; font-weight: 300; margin-top: -4rpx; }
+
+/* 筛选面板可折叠 */
+.filter-cat-group { width: 100%; margin-bottom: 8rpx; }
+.dropdown-tag-row { display: flex; align-items: center; gap: 8rpx; }
+.expand-toggle { font-size: 20rpx; color: #999; padding: 8rpx 12rpx; }
+.filter-children { display: flex; flex-wrap: wrap; gap: 12rpx; padding: 8rpx 0 4rpx 16rpx; }
+
+/* 有子分类的一级类目独占一行 */
+.filter-parent-block { width: 100%; margin-top: 16rpx; }
+.parent-tag { margin-bottom: 12rpx; }
+.filter-children-inline { display: flex; flex-wrap: wrap; gap: 12rpx; padding-left: 16rpx; }
+
+.no-more { text-align: center; padding: 30rpx 0 20rpx; }
+.no-more-text { font-size: 26rpx; color: #CCC; }
+
+.total-count { display: block; font-size: 28rpx; color: #CCC; font-weight: 600; margin-top: 12rpx; }
+.dishes-bottom-blessing { display: flex; align-items: center; justify-content: center; margin-top: 20rpx; }
+.bottom-mascot { width: 50rpx; height: 50rpx; margin-right: 12rpx; }
+.bottom-text { font-size: 26rpx; color: #B8E6C1; }
+
+.load-more { text-align: center; padding: 30rpx; }
+.load-more text { font-size: 28rpx; color: #6FCF97; }
