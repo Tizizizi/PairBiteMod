@@ -3,7 +3,7 @@ const app = getApp()
 Page({
   data: {
     orders: [],
-    allOrders: [],
+    allOrders: [],        // 懒加载缓存（分页滚动用）
     loading: true,
     hasMore: true,
     page: 0,
@@ -32,9 +32,14 @@ Page({
     showSortPanel: false,
     sortOrder: 'desc',
     sortLabel: '最新优先',
+    // 全量状态
+    isFilterActive: false,  // 是否处于搜索/筛选/非默认排序状态
   },
 
   _loaded: false,
+  _fullDataLoaded: false,   // 全量数据是否已加载
+  _fullData: [],             // 全量历史缓存（存在 this 上，不放 data）
+  _fullDataPromise: null,    // 防止并发重复请求
 
   async onShow() {
     app.setKitchenTitle()
@@ -65,8 +70,15 @@ Page({
     this.setData({ allCategories: all, parentCats, childrenMap })
   },
 
+  // ===== 分页加载（首次进入 / 滚动加载更多） =====
   async loadOrders(reset = false) {
-    if (reset) this.setData({ page: 0, allOrders: [], orders: [], hasMore: true })
+    if (reset) {
+      this.setData({ page: 0, allOrders: [], orders: [], hasMore: true })
+      // 同步重置全量缓存
+      this._fullDataLoaded = false
+      this._fullData = []
+      this._fullDataPromise = null
+    }
     this.setData({ loading: true })
 
     try {
@@ -77,11 +89,10 @@ Page({
       })
       if (!res.result?.success) throw new Error()
 
-      const data = res.result.data
-      const newOrders = data.map(item => this._processOrder(item))
+      const newOrders = res.result.data.map(item => this._processOrder(item))
       const allOrders = reset ? newOrders : [...existing, ...newOrders]
       await app.convertFileURLs(allOrders, ['imageUrl'])
-      this.setData({ allOrders, hasMore: data.length === pageSize, page: page + 1, loading: false })
+      this.setData({ allOrders, hasMore: res.result.data.length === pageSize, page: page + 1, loading: false })
       this.applyFilterAndSort()
     } catch (e) {
       console.error('加载历史失败', e)
@@ -89,7 +100,41 @@ Page({
     }
   },
 
-  // 加载菜品库最新数据，建立 ID→图片 的映射
+  // ===== 全量数据加载（搜索/筛选/非默认排序时触发，带缓存防并发） =====
+  async _ensureFullData() {
+    if (this._fullDataLoaded) return
+    if (this._fullDataPromise) {
+      await this._fullDataPromise
+      return
+    }
+    this._fullDataPromise = (async () => {
+      try {
+        const res = await wx.cloud.callFunction({
+          name: 'getCoupleData',
+          data: { collection: app.globalData.collectionOrderList, orderBy: 'createTime', order: 'desc', limit: 1000 }
+        })
+        if (res.result?.success) {
+          const orders = res.result.data.map(item => this._processOrder(item))
+          await app.convertFileURLs(orders, ['imageUrl'])
+          this._fullData = orders
+          this._fullDataLoaded = true
+        }
+      } catch (e) {
+        console.error('加载全量历史失败', e)
+      } finally {
+        this._fullDataPromise = null
+      }
+    })()
+    await this._fullDataPromise
+  },
+
+  // ===== 判断当前是否处于非默认状态（需要全量数据） =====
+  _isNonDefault() {
+    const { searchKey, filterCategoryId, filterCreator, filterMealStatus, sortOrder } = this.data
+    return !!(searchKey || filterCategoryId || filterCreator || filterMealStatus || sortOrder !== 'desc')
+  },
+
+  // 加载菜品库最新数据，建立 ID→信息 的映射
   async _loadDishMap() {
     try {
       const res = await wx.cloud.callFunction({
@@ -98,17 +143,14 @@ Page({
       })
       if (res.result?.success) {
         const map = {}
-        res.result.data.forEach(d => {
-          map[d._id] = { imageUrl: d.imageUrl, name: d.name }
-        })
-		await app.convertFileURLs(res.result.data, ['imageUrl'])
+        res.result.data.forEach(d => { map[d._id] = { imageUrl: d.imageUrl, name: d.name } })
+        await app.convertFileURLs(res.result.data, ['imageUrl'])
         this._dishMap = map
       }
     } catch (e) {
       this._dishMap = {}
     }
   },
-
 
   _processOrder(item) {
     const noteCount = (item.mealNotes || []).length
@@ -207,10 +249,22 @@ Page({
     this.applyFilterAndSort()
   },
 
-  // ===== 核心筛选排序 =====
-  applyFilterAndSort() {
-    let { allOrders, searchKey, filterCategoryId, filterCreator, filterMealStatus, myOpenid, sortOrder, childrenMap } = this.data
-    let result = [].concat(allOrders)
+  // ===== 核心：筛选 + 排序（自动决定用全量数据还是已加载数据） =====
+  async applyFilterAndSort() {
+    const { searchKey, filterCategoryId, filterCreator, filterMealStatus, myOpenid, sortOrder, childrenMap } = this.data
+    const nonDefault = this._isNonDefault()
+
+    let source
+    if (nonDefault) {
+      // 需要全量数据，首次调用会请求云端，之后走缓存
+      await this._ensureFullData()
+      source = this._fullData
+    } else {
+      // 默认状态，直接用已分页加载的数据
+      source = this.data.allOrders
+    }
+
+    let result = [...source]
 
     // 搜索（菜品名）
     if (searchKey) {
@@ -239,12 +293,17 @@ Page({
       return sortOrder === 'desc' ? tb - ta : ta - tb
     })
 
-    this.setData({ orders: result })
+    this.setData({ orders: result, isFilterActive: nonDefault })
   },
 
   closeAllPanels() { this.setData({ showFilterPanel: false, showSortPanel: false }) },
 
-  loadMore() { if (this.data.hasMore && !this.data.loading) this.loadOrders() },
+  loadMore() {
+    // 筛选/搜索状态下不需要加载更多（已加载全量数据）
+    if (this.data.hasMore && !this.data.loading && !this.data.isFilterActive) {
+      this.loadOrders()
+    }
+  },
 
   getCreatorName(openid) { return app.getDisplayName(openid) },
 
@@ -278,18 +337,25 @@ Page({
   },
 
   async toggleMark(id) {
-    const orders = this.data.allOrders
-    const index = orders.findIndex(item => item._id === id)
-    if (index === -1) return
-    const newMarked = !orders[index].marked
+    // 在懒加载缓存和全量缓存中都更新
+    const findAndUpdate = (arr) => {
+      const idx = arr.findIndex(item => item._id === id)
+      if (idx === -1) return arr
+      const newMarked = !arr[idx].marked
+      arr[idx] = { ...arr[idx], marked: newMarked, slideButtons: this.getSlideButtons(newMarked) }
+      return arr
+    }
+
     wx.showLoading({ title: '处理中...', mask: true })
     try {
+      const order = this.data.allOrders.find(item => item._id === id)
+      const newMarked = !order?.marked
       const res = await wx.cloud.callFunction({ name: 'updateCoupleData', data: { collection: app.globalData.collectionOrderList, docId: id, action: 'update', data: { marked: newMarked } } })
       wx.hideLoading()
       if (!res.result?.success) { this.showTip('标记失败'); return }
-      orders[index].marked = newMarked
-      orders[index].slideButtons = this.getSlideButtons(newMarked)
-      this.setData({ allOrders: orders })
+      // 同步更新两个缓存
+      this.setData({ allOrders: findAndUpdate([...this.data.allOrders]) })
+      this._fullData = findAndUpdate([...this._fullData])
       this.applyFilterAndSort()
       wx.showToast({ title: newMarked ? '已标记' : '已取消', icon: 'success' })
     } catch (e) { wx.hideLoading(); this.showTip('标记失败了') }
@@ -309,19 +375,13 @@ Page({
           const deletedOrder = this.data.allOrders.find(item => item._id === id)
           if (deletedOrder?.dishes) {
             for (const dish of deletedOrder.dishes) {
-              wx.cloud.callFunction({
-                name: 'updateCoupleData',
-                data: {
-                  collection: app.globalData.collectionDishList,
-                  docId: dish._id,
-                  action: 'inc',
-                  data: { orderCount: -1 }
-                }
-              }).catch(() => {})
+              wx.cloud.callFunction({ name: 'updateCoupleData', data: { collection: app.globalData.collectionDishList, docId: dish._id, action: 'inc', data: { orderCount: -1 } } }).catch(() => {})
             }
-          }		  
+          }
           wx.showToast({ title: '已删除', icon: 'success' })
+          // 同步从两个缓存中删除
           const allOrders = this.data.allOrders.filter(item => item._id !== id)
+          this._fullData = this._fullData.filter(item => item._id !== id)
           this.setData({ allOrders })
           this.applyFilterAndSort()
         } catch (e) { wx.hideLoading(); setTimeout(() => this.showTip('只能删除自己点的菜哦~'), 300) }
@@ -350,4 +410,3 @@ Page({
   },
   onReachBottom() { this.loadMore() },
 })
-

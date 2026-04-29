@@ -129,10 +129,13 @@
     <text>没有找到符合条件的记录</text>
   </view>
 
-  <view class="load-more" wx:if="{{hasMore && !loading && allOrders.length > 0}}" bindtap="loadMore"><text>加载更多</text></view>
-  <view class="no-more" wx:if="{{allOrders.length > 0 && !hasMore && orders.length > 0}}">
-	<text class="no-more-center">~ 已经到底啦 ~</text>
-    <text class="total-count">共计 {{allOrders.length}} 单</text>
+  <!-- 加载更多：筛选/搜索激活时隐藏（已加载全量数据，无需分页） -->
+  <view class="load-more" wx:if="{{hasMore && !loading && allOrders.length > 0 && !isFilterActive}}" bindtap="loadMore"><text>加载更多</text></view>
+  <!-- 底部统计：筛选/搜索激活时始终显示结果数；普通模式下只在全部加载完后显示 -->
+  <view class="no-more" wx:if="{{orders.length > 0 && (isFilterActive || (!hasMore && allOrders.length > 0))}}">
+    <text class="no-more-center">~ 已经到底啦 ~</text>
+    <text class="total-count" wx:if="{{isFilterActive}}">找到 {{orders.length}} 条记录</text>
+    <text class="total-count" wx:else>共计 {{allOrders.length}} 单</text>
     <view class="history-bottom-blessing">
       <image class="bottom-mascot" src="/images/mascot.gif" mode="aspectFit"></image>
       <text class="bottom-text">一二布布祝你们用餐愉快 ~</text>
