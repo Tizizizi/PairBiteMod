@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PairBite-mod · 情侣点餐小程序 · 部署指南与功能介绍</title>
+<style>
+  :root { --g1:#6FCF97; --g2:#4CAF6E; --g3:#E8F8F0; --g4:#D0F0DF; --bg:#FAFCF8; --text:#2D3A2E; --tl:#6B7C6D; --card:#fff; --bd:#E4EDE6; --code:#F0F6F2; --r:14px; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);line-height:1.85;font-size:15px}
+  .hero{background:linear-gradient(135deg,#6FCF97,#4ECDC4,#45B7AA);padding:64px 24px 52px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.12),transparent 60%);pointer-events:none}
+  .hero h1{font-size:30px;font-weight:800;color:#fff;margin:8px 0}
+  .hero p{color:rgba(255,255,255,.85);font-size:15px;max-width:520px;margin:0 auto}
+  .container{max-width:760px;margin:0 auto;padding:0 18px 60px}
+  .toc{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:24px 28px;margin:-28px auto 36px;position:relative;z-index:2;box-shadow:0 6px 24px rgba(80,120,80,.1)}
+  .toc h2{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--tl);margin-bottom:14px}
+  .toc ol{list-style:none;counter-reset:t;columns:2;column-gap:20px}
+  .toc li{counter-increment:t;padding:5px 0;font-size:14px;break-inside:avoid}
+  .toc li::before{content:counter(t,decimal-leading-zero);color:var(--g1);font-weight:700;margin-right:8px;font-size:13px}
+  .toc a{color:var(--text);text-decoration:none;border-bottom:1px dashed var(--bd)}
+  .toc a:hover{color:var(--g2);border-color:var(--g2)}
+  .section{margin-bottom:40px}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--g3);color:var(--g2);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:16px;margin-bottom:10px}
+  .section h2{font-size:22px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--g4)}
+  .section h3{font-size:16px;font-weight:700;margin:22px 0 10px;color:var(--g2)}
+  p{margin-bottom:12px}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;margin:14px 0;box-shadow:0 2px 10px rgba(80,120,80,.06)}
+  .card.hi{border-left:4px solid var(--g1);background:var(--g3)}
+  .card.warn{border-left:4px solid #FFAA5C;background:#FFF9F0}
+  .card.pink{border-left:4px solid #FF7EB3;background:#FFF0F5}
+  .card.opt{border-left:4px solid #7EB8FF;background:#F0F6FF}
+  .card-t{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  code{font-family:'SF Mono','Fira Code','Menlo',monospace;background:var(--code);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--g2);border:1px solid var(--bd)}
+  pre{background:#1E2D24;color:#D4E8DA;padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0 16px;font-size:13px;line-height:1.65}
+  pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps>li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:18px;min-height:32px}
+  .steps>li::before{content:counter(s);position:absolute;left:0;top:2px;width:30px;height:30px;background:var(--g1);color:#fff;font-weight:700;font-size:13px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th{background:var(--g3);font-weight:600;text-align:left;padding:8px 12px;border:1px solid var(--bd)}
+  td{padding:8px 12px;border:1px solid var(--bd);vertical-align:top}
+  tr:nth-child(even) td{background:#FAFCF8}
+  ul{padding-left:18px;margin-bottom:12px}li{margin-bottom:5px}
+  .feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;margin:16px 0}
+  .feat-item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(80,120,80,.06)}
+  .feat-item .icon{font-size:36px;margin-bottom:8px}
+  .feat-item .name{font-size:14px;font-weight:600;color:var(--text)}
+  .feat-item .desc{font-size:12px;color:var(--tl);margin-top:4px}
+
+  /* Screenshot gallery */
+  .screenshots{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+  .screenshots img{width:calc(25% - 8px);border-radius:10px;border:1px solid var(--bd);box-shadow:0 2px 10px rgba(80,120,80,.10);object-fit:cover}
+
+  /* Step images */
+  .step-img{display:block;width:100%;max-width:640px;border-radius:10px;border:1px solid var(--bd);box-shadow:0 2px 12px rgba(80,120,80,.10);margin:12px 0 4px}
+  .step-imgs{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+  .step-imgs img{flex:1;min-width:200px;max-width:100%;border-radius:10px;border:1px solid var(--bd);box-shadow:0 2px 12px rgba(80,120,80,.10)}
+
+  /* License & Contrib */
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .meta-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:20px 24px;box-shadow:0 2px 8px rgba(80,120,80,.06)}
+  .meta-card h3{font-size:15px;font-weight:700;color:var(--g2);margin-bottom:10px}
+
+  .footer{text-align:center;padding:36px 20px;color:var(--tl);font-size:13px;border-top:1px solid var(--bd);margin-top:36px}
+  @media(max-width:600px){
+    .hero{padding:40px 16px 36px}.hero h1{font-size:24px}
+    .toc ol{columns:1}
+    .container{padding:0 14px 48px}
+    .feat{grid-template-columns:1fr 1fr}
+    .screenshots img{width:calc(50% - 6px)}
+    .meta-grid{grid-template-columns:1fr}
+    .step-imgs{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div style="font-size:48px;margin-bottom:8px">🍳💕</div>
+  <h1>PairBite-mod 情侣点餐小程序</h1>
+  <p>零基础部署指南 · 功能介绍 · 从注册到使用全流程</p>
+</div>
+
+<div class="container">
+
+<nav class="toc">
+  <h2>目 录</h2>
+  <ol>
+    <li><a href="#features">功能介绍</a></li>
+    <li><a href="#prep">注册小程序账号</a></li>
+    <li><a href="#devtool">安装开发者工具</a></li>
+    <li><a href="#import">导入项目</a></li>
+    <li><a href="#cloud">开通云开发</a></li>
+    <li><a href="#config">修改配置文件</a></li>
+    <li><a href="#deploy">部署云函数</a></li>
+    <li><a href="#database">创建数据库集合</a></li>
+    <li><a href="#notify">配置订阅消息（可选）</a></li>
+    <li><a href="#upload">上传体验版</a></li>
+    <li><a href="#invite">邀请对象使用</a></li>
+    <li><a href="#custom">个性化修改</a></li>
+    <li><a href="#privacy">隐私保障</a></li>
+    <li><a href="#faq">常见问题</a></li>
+  </ol>
+</nav>
+
+<!-- 功能介绍 -->
+<section class="section" id="features">
+  <span class="badge">✨ 功能亮点</span>
+  <h2>01 · 功能介绍</h2>
+
+  <div class="feat">
+    <div class="feat-item"><div class="icon">💑</div><div class="name">伴侣绑定</div><div class="desc">邀请码配对，数据双向同步</div></div>
+    <div class="feat-item"><div class="icon">🍽️</div><div class="name">菜品库管理</div><div class="desc">添加/编辑/删除菜品，支持图片</div></div>
+    <div class="feat-item"><div class="icon">📂</div><div class="name">二级分类</div><div class="desc">一级+二级类目，自定义emoji图标</div></div>
+    <div class="feat-item"><div class="icon">⚙️</div><div class="name">选项设置</div><div class="desc">辣度/份量等单选项，点菜时选择</div></div>
+    <div class="feat-item"><div class="icon">🛒</div><div class="name">智能点菜</div><div class="desc">分类浏览、搜索、购物车、备注</div></div>
+    <div class="feat-item"><div class="icon">📸</div><div class="name">多张成品照</div><div class="desc">上传多张，显示上传者和时间</div></div>
+    <div class="feat-item"><div class="icon">💬</div><div class="name">用餐感想</div><div class="desc">双方各自发布，独立编辑删除</div></div>
+    <div class="feat-item"><div class="icon">📊</div><div class="name">筛选排序</div><div class="desc">按分类/添加者/用餐状态筛选</div></div>
+    <div class="feat-item"><div class="icon">🔄</div><div class="name">再来一单</div><div class="desc">一键复制历史订单菜品</div></div>
+    <div class="feat-item"><div class="icon">🔔</div><div class="name">消息通知</div><div class="desc">点菜后推送微信通知给对方</div></div>
+    <div class="feat-item"><div class="icon">🏠</div><div class="name">厨房命名</div><div class="desc">给你们的小厨房取专属名字</div></div>
+    <div class="feat-item"><div class="icon">🔒</div><div class="name">完全私密</div><div class="desc">体验版+白名单，仅两人可用</div></div>
+  </div>
+
+  <div class="screenshots">
+    <img src="images/1.jpg" alt="截图1" />
+    <img src="images/2.jpg" alt="截图2" />
+    <img src="images/3.jpg" alt="截图3" />
+    <img src="images/4.jpg" alt="截图4" />
+    <img src="images/5.jpg" alt="截图5" />
+    <img src="images/6.jpg" alt="截图6" />
+    <img src="images/7.jpg" alt="截图7" />
+    <img src="images/8.jpg" alt="截图8" />
+  </div>
+
+  <h3>技术特点</h3>
+  <div class="card hi">
+    <div class="card-t">✅ 零成本运行</div>
+    <p style="margin:0">基于微信云开发，不需要服务器、域名、备案。免费额度（20万次/月调用、3GB 容量、10GB CDN 流量）完全够两个人日常使用。</p>
+  </div>
+  <div class="card hi">
+    <div class="card-t">✅ 图片智能缓存</div>
+    <p style="margin:0">客户端 90 分钟缓存 + 云函数分批处理，解决云存储免费环境权限限制，同一张图片不重复请求临时链接。</p>
+  </div>
+</section>
+
+<!-- 注册 -->
+<section class="section" id="prep">
+  <span class="badge">📋 第一步</span>
+  <h2>02 · 注册小程序账号</h2>
+  <ol class="steps">
+    <li>打开 <a href="https://mp.weixin.qq.com/wxopen/waregister?action=step1" target="_blank">微信小程序注册页</a>，选择「小程序」类型</li>
+    <li>使用一个<strong>未注册过微信公众平台的邮箱</strong>，按引导完成注册，主体选「个人」</li>
+    <li>注册完成后登录 <a href="https://mp.weixin.qq.com/" target="_blank">微信公众平台</a>，在微信小程序后台首页，完成【小程序信息】和【小程序类目】的信息补充（小程序类目选 <strong>工具 → 备忘录</strong> 即可，并设置为主营类目）</li>
+    <li>进入 <code>开发管理 → 开发设置</code>，记下你的 <strong>AppID</strong>（<code>wx</code> 开头的字符串）</li>
+  </ol>
+  <div class="card warn"><div class="card-t">⚠️ 注意</div><p style="margin:0">一个邮箱只能注册一种平台账号，一个身份证最多 5 个个人小程序。</p></div>
+</section>
+
+<!-- 开发者工具 -->
+<section class="section" id="devtool">
+  <span class="badge">🔧 第二步</span>
+  <h2>03 · 安装微信开发者工具</h2>
+  <ol class="steps">
+    <li>下载 <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html" target="_blank">微信开发者工具</a>「稳定版」（Windows/Mac）</li>
+    <li>安装后打开，用<strong>小程序管理员的微信</strong>扫码登录</li>
+  </ol>
+</section>
+
+<!-- 导入 -->
+<section class="section" id="import">
+  <span class="badge">📂 第三步</span>
+  <h2>04 · 导入项目</h2>
+  <ol class="steps">
+    <li>将 <code>PairBite-mod.zip</code> 解压到电脑任意位置</li>
+    <li>打开开发者工具 → 点「<strong>+</strong>」或「导入」</li>
+    <li><strong>目录</strong>：选择解压后的 <code>PairBite-mod</code> 文件夹（里面应有 <code>miniprogram</code> 和 <code>cloudfunctions</code>）</li>
+    <li><strong>AppID</strong>：填入你的 AppID</li>
+    <li><strong>后端服务</strong>：选择「微信云开发」</li>
+  </ol>
+  <img src="images/9.png" class="step-img" alt="导入项目" />
+</section>
+
+<!-- 云开发 -->
+<section class="section" id="cloud">
+  <span class="badge">☁️ 第四步</span>
+  <h2>05 · 开通云开发环境</h2>
+  <ol class="steps">
+    <li>点击开发者工具顶部的「<strong>云开发</strong>」按钮（云朵图标）</li>
+    <li>首次会弹出开通引导，点击「开通」</li>
+    <li>付费方式选「按量付费」（有免费额度）</li>
+    <li>记下控制台顶部的<strong>环境 ID</strong></li>
+  </ol>
+  <div class="step-imgs">
+    <img src="images/10.png" alt="开通云开发" />
+    <img src="images/11.png" alt="环境ID" />
+  </div>
+</section>
+
+<!-- 配置 -->
+<section class="section" id="config">
+  <span class="badge">✏️ 第五步</span>
+  <h2>06 · 修改配置文件</h2>
+  <p>只需要改两个文件：</p>
+
+  <h3>6.1 修改 <code>project.config.json</code></h3>
+  <p>在项目根目录，用 <code>Ctrl+F</code> 搜索 <code>appid</code>，把值改成你自己的 AppID。</p>
+  <img src="images/12.png" class="step-img" alt="修改project.config.json" />
+
+  <h3>6.2 修改 <code>miniprogram/envList.js</code></h3>
+  <p>把 <code>envId</code> 的值改成你自己的云环境 ID：</p>
+  <pre><code>const envList = [{"envId":"你的云环境ID","alias":"cloud"}]</code></pre>
+  <img src="images/13.png" class="step-img" alt="修改envList.js" />
+
+  <div class="card pink"><div class="card-t">❤️ 就这两处！</div><p style="margin:0">改完按 Ctrl+S 保存，其他代码都不用动。</p></div>
+</section>
+
+<!-- 部署云函数 -->
+<section class="section" id="deploy">
+  <span class="badge">🚀 第六步（最关键）</span>
+  <h2>07 · 部署 10 个云函数</h2>
+  <p>在开发者工具左侧找到 <code>cloudfunctions</code> 文件夹，展开后看到 10 个子文件夹：</p>
+
+  <table>
+    <tr><th>云函数</th><th>功能</th></tr>
+    <tr><td><code>createUser</code></td><td>用户注册/登录</td></tr>
+    <tr><td><code>bindPartner</code></td><td>伴侣绑定</td></tr>
+    <tr><td><code>unbindPartner</code></td><td>解除绑定</td></tr>
+    <tr><td><code>getCoupleData</code></td><td>查询共享数据</td></tr>
+    <tr><td><code>updateCoupleData</code></td><td>更新共享数据</td></tr>
+    <tr><td><code>manageCategory</code></td><td>分类管理</td></tr>
+    <tr><td><code>updateKitchenName</code></td><td>厨房命名</td></tr>
+    <tr><td><code>sendNotify</code></td><td>消息通知</td></tr>
+    <tr><td><code>getOpenId</code></td><td>获取用户标识</td></tr>
+    <tr><td><code>getFileURL</code></td><td>图片链接转换</td></tr>
+  </table>
+
+  <h3>对每个云函数文件夹操作：</h3>
+  <ol class="steps">
+    <li>先右键 <code>cloudfunctions</code> 文件夹，选择环境</li>
+    <li>右键文件夹 → 「<strong>创建并部署：云端安装依赖（不上传 node_modules）</strong>」</li>
+    <li>等待控制台显示"上传云函数 xxx 成功"</li>
+  </ol>
+  <div class="step-imgs">
+    <img src="images/14.png" alt="部署云函数步骤1" />
+    <img src="images/15.png" alt="部署云函数步骤2" />
+  </div>
+</section>
+
+<!-- 数据库 -->
+<section class="section" id="database">
+  <span class="badge">💾 第七步</span>
+  <h2>08 · 创建数据库集合</h2>
+  <p>打开云开发控制台 → 「数据库」→ 点「+」添加集合，依次创建 4 个（名称区分大小写）：</p>
+  <pre><code>User
+DishList
+OrderList
+Category</code></pre>
+  <img src="images/16.png" class="step-img" alt="创建数据库集合" />
+  <div class="card hi"><div class="card-t">💡 不需要手动建表结构</div><p style="margin:0">只要创建空集合就行，字段由代码自动管理。首次绑定伴侣后，分类数据也会自动初始化。</p></div>
+</section>
+
+<!-- 订阅消息 -->
+<section class="section" id="notify">
+  <span class="badge">🔔 第八步（可选）</span>
+  <h2>09 · 配置订阅消息模板</h2>
+  <p>如果需要点菜后推送微信通知给对方：</p>
+  <ol class="steps">
+    <li>登录 <a href="https://mp.weixin.qq.com/" target="_blank">微信公众平台</a> → <code>功能 → 订阅消息 → 公共模板库</code></li>
+    <li>搜索「日程提醒」，选择包含以下字段的模板：<strong>时间、任务名称、提醒内容、备注</strong>，添加并提交</li>
+  </ol>
+  <div class="step-imgs">
+    <img src="images/17.png" alt="搜索模板" />
+    <img src="images/18.png" alt="选择模板字段" />
+  </div>
+  <ol class="steps" style="counter-reset:s 2">
+    <li>回到「我的模板」，复制 <strong>模板 ID</strong></li>
+    <li>打开项目中的 <code>miniprogram/app.js</code>，搜索 <code>notifyTmplIds</code>，把值替换成你的模板 ID</li>
+  </ol>
+  <div class="card opt"><div class="card-t">💡 不配置也不影响核心功能</div><p style="margin:0">只是点菜后不会推送通知给对方。</p></div>
+  <div class="card warn">
+    <div class="card-t">⚠️ 收不到通知？</div>
+    <p style="margin:0">微信订阅消息需要<strong>双方都授权</strong>才能互相收到。使用时遇到授权弹窗，请勾选「总是保持以上选择」并点击允许。</p>
+  </div>
+</section>
+
+<!-- 上传 -->
+<section class="section" id="upload">
+  <span class="badge">📤 第九步</span>
+  <h2>10 · 上传为体验版</h2>
+  <ol class="steps">
+    <li>点顶部「<strong>工具 → 上传</strong>」按钮，填版本号（如 1.0.0）和描述</li>
+  </ol>
+  <img src="images/19.png" class="step-img" alt="上传体验版" />
+  <ol class="steps" style="counter-reset:s 1">
+    <li>登录 <a href="https://mp.weixin.qq.com/" target="_blank">微信公众平台</a> → <code>管理 → 版本管理</code>，在「开发版本」中找到上传的版本</li>
+    <li>点「▼」下拉 → 「<strong>选为体验版本</strong>」，保存体验版二维码</li>
+  </ol>
+  <img src="images/20.png" class="step-img" alt="选为体验版" />
+</section>
+
+<!-- 邀请 -->
+<section class="section" id="invite">
+  <span class="badge">💑 第十步</span>
+  <h2>11 · 邀请对象使用</h2>
+  <ol class="steps">
+    <li>微信公众平台 → <code>管理 → 成员管理 → 体验成员</code> → 添加对象的微信号</li>
+    <li>对方确认邀请后，扫描体验版二维码打开小程序</li>
+    <li><strong>你</strong>设置头像昵称 → 进入「绑定」页 → 获得邀请码</li>
+    <li><strong>对象</strong>设置头像昵称 → 输入你的邀请码 → 绑定成功 🎉</li>
+  </ol>
+</section>
+
+<!-- 个性化 -->
+<section class="section" id="custom">
+  <span class="badge">🎨 个性化</span>
+  <h2>12 · 个性化修改</h2>
+
+  <h3>修改小程序名称和图标</h3>
+  <p>在 <a href="https://mp.weixin.qq.com/" target="_blank">微信公众平台</a> → <code>设置 → 基本设置</code> 里修改（不是在代码里改）。</p>
+
+  <h3>修改品牌名称</h3>
+  <p>只需要改两个地方：</p>
+  <ul>
+    <li><code>app.json</code> 的 <code>navigationBarTitleText</code></li>
+    <li><code>app.js</code> 的 <code>appName</code></li>
+  </ul>
+
+  <h3>修改主题色</h3>
+  <p><code>app.json</code> 的 <code>navigationBarBackgroundColor</code> 改成你喜欢的颜色。</p>
+
+  <h3>更换装饰图片</h3>
+  <p>替换 <code>miniprogram/images/</code> 目录下的同名文件即可，支持 jpg/png/gif。</p>
+</section>
+
+<!-- 隐私 -->
+<section class="section" id="privacy">
+  <span class="badge">🔒 隐私</span>
+  <h2>13 · 隐私保障</h2>
+  <div class="card hi">
+    <div class="card-t">✅ 三重保障</div>
+    <ul style="margin:0">
+      <li><strong>不提交审核上架</strong> — 只用体验版，搜索不到</li>
+      <li><strong>体验成员白名单</strong> — 只有你添加的人才能使用</li>
+      <li><strong>邀请码绑定</strong> — 数据按 coupleId 隔离，技术层面确保只有你俩看到</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <span class="badge">❓ 疑难</span>
+  <h2>14 · 常见问题</h2>
+
+  <div class="card"><div class="card-t">Q: 白屏或报"云环境不存在"</div><p style="margin:0">检查 <code>miniprogram/envList.js</code> 的 envId 是否和云开发控制台顶部的环境 ID 一致。</p></div>
+
+  <div class="card"><div class="card-t">Q: 对象扫码提示无权限</div><p style="margin:0">确认已在微信公众平台 → 成员管理 → 体验成员中添加了对方微信号且对方已确认。</p></div>
+
+  <div class="card"><div class="card-t">Q: 代码包超过 2MB</div><p style="margin:0">用 <a href="https://tinypng.com" target="_blank">TinyPNG</a> 压缩 <code>miniprogram/images/</code> 下的图片。</p></div>
+
+  <div class="card"><div class="card-t">Q: 会产生费用吗？</div><p style="margin:0">免费额度（20万次/月调用、3GB 容量、10GB CDN）完全够两个人使用。项目自带图片缓存优化，正常使用不会超限。</p></div>
+
+  <div class="card"><div class="card-t">Q: 修改代码后怎么更新？</div><p style="margin:0">改了前端代码 → 重新上传体验版。改了云函数 → 右键重新部署。手机端重新打开即生效。</p></div>
+</section>
+
+<!-- 贡献 & License & 致谢 -->
+<section class="section" id="meta">
+  <div class="meta-grid">
+    <div class="meta-card">
+      <h3>🤝 贡献</h3>
+      <p style="font-size:14px;color:var(--tl);margin:0">欢迎提交 Issue 和 Pull Request，一起把这个小程序变得更好用。</p>
+    </div>
+    <div class="meta-card">
+      <h3>📄 License</h3>
+      <p style="font-size:14px;color:var(--tl);margin-bottom:8px">本项目采用 <strong>CC BY-NC-SA 4.0</strong> 协议开源。</p>
+      <ul style="font-size:13px;color:var(--tl);margin:0;padding-left:16px">
+        <li>允许自由使用、修改和分享</li>
+        <li><strong>禁止商业用途</strong></li>
+        <li>修改后的作品须以相同协议分享</li>
+        <li>须注明原作者</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card hi" style="margin-top:0">
+    <div class="card-t">🙏 致谢</div>
+    <p style="margin:0;font-size:14px">本项目基于 <a href="https://github.com/630999Steven/PairBite" target="_blank">PairBite</a> 二次开发，感谢原作者 <a href="https://github.com/630999Steven" target="_blank">@630999Steven</a> 的开源贡献。</p>
+  </div>
+</section>
+
+<div class="footer">
+  <p>PairBite-mod · 基于 PairBite 开源项目，在 Claude 指导下二次开发</p>
+  <p style="margin-top:6px">祝你们用餐愉快 🍽️💕</p>
+</div>
+
+</div>
+</body>
+</html>
