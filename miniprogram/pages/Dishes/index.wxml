@@ -1,184 +1,123 @@
 <view class="container">
   <view class="page-header">
     <view class="page-header-text">
-      <text class="page-title">今天吃什么？</text>
-      <text class="page-subtitle">选好菜品，通知{{partnerName}}~</text>
+      <text class="page-title">菜品库</text>
+      <text class="page-subtitle">和{{partnerName}}一起管理你们的菜单 ~</text>
     </view>
-    <image class="header-mascot" src="/images/order-empty.gif" mode="aspectFit" wx:if="{{dishes.length > 0}}"></image>
+    <image class="header-mascot" src="/images/dishes-empty.gif" mode="aspectFit" wx:if="{{dishes.length > 0}}"></image>
   </view>
 
   <view class="search-section">
-    <view class="search-box">
+    <view class="search-bar">
       <text class="search-icon">🔍</text>
-      <input class="search-input" placeholder="搜索菜品" value="{{searchKey}}" bindinput="onSearchInput" confirm-type="search" />
-      <text class="search-clear" wx:if="{{searchKey}}" bindtap="clearSearch">✕</text>
+      <input class="search-input" placeholder="搜索菜品..." bindinput="onSearch" value="{{search}}" />
     </view>
   </view>
 
+  <view class="filter-sort-bar" wx:if="{{dishes.length > 0}}">
+    <view class="bar-item {{filterType ? 'active' : ''}}" bindtap="toggleFilterPanel">
+      <text>{{filterLabel}}</text>
+      <text class="bar-arrow">{{showFilterPanel ? '▲' : '▼'}}</text>
+    </view>
+    <view class="bar-divider"></view>
+    <view class="bar-item active" bindtap="toggleSortPanel">
+      <text>{{sortLabel}}</text>
+      <text class="bar-arrow">{{showSortPanel ? '▲' : '▼'}}</text>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
+  <view class="dropdown-mask" wx:if="{{showFilterPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showFilterPanel}}">
+	<view class="dropdown-section">
+      <text class="dropdown-title">按分类</text>
+      <!-- 无二级类目的一级分类：一行多个 -->
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCategoryId === item._id ? 'active' : ''}}"
+              wx:for="{{parentCats}}" wx:key="_id" wx:if="{{!childrenMap[item._id] || childrenMap[item._id].length === 0}}"
+              data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+      </view>
+      <!-- 有二级类目的一级分类：独占一行，默认展开 -->
+      <view wx:for="{{parentCats}}" wx:key="_id" wx:if="{{childrenMap[item._id] && childrenMap[item._id].length > 0}}" class="filter-parent-block">
+        <view class="dropdown-tag parent-tag {{filterCategoryId === item._id ? 'active' : ''}}" data-id="{{item._id}}" bindtap="selectCategoryFilter">{{item.icon}} {{item.name}}</view>
+        <view class="filter-children-inline">
+          <view class="dropdown-tag child-tag {{filterCategoryId === child._id ? 'active' : ''}}" wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:key="_id" data-id="{{child._id}}" bindtap="selectCategoryFilter">{{child.icon}} {{child.name}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="dropdown-section">
+      <text class="dropdown-title">按添加者</text>
+      <view class="dropdown-tags">
+        <view class="dropdown-tag {{filterCreator === 'me' ? 'active' : ''}}" data-who="me" bindtap="selectCreatorFilter">{{myNickname}}</view>
+        <view class="dropdown-tag {{filterCreator === 'partner' ? 'active' : ''}}" data-who="partner" bindtap="selectCreatorFilter">{{partnerNickname}}</view>
+      </view>
+    </view>
+    <view class="dropdown-clear" bindtap="clearFilter" wx:if="{{filterType}}">清除筛选</view>
+  </view>
+
+  <!-- 排序面板（只有添加日期和点菜次数） -->
+  <view class="dropdown-mask" wx:if="{{showSortPanel}}" bindtap="closeAllPanels"></view>
+  <view class="dropdown-panel" wx:if="{{showSortPanel}}">
+    <view class="dropdown-sort-item {{sortField === 'createTime' ? 'active' : ''}}" data-field="createTime" bindtap="selectSort">
+      <text>添加日期</text><text class="sort-arrow" wx:if="{{sortField === 'createTime'}}">{{sortOrder === 'desc' ? '↓ 最新' : '↑ 最早'}}</text>
+    </view>
+    <view class="dropdown-sort-item {{sortField === 'orderCount' ? 'active' : ''}}" data-field="orderCount" bindtap="selectSort">
+      <text>点菜次数</text><text class="sort-arrow" wx:if="{{sortField === 'orderCount'}}">{{sortOrder === 'desc' ? '↓ 最多' : '↑ 最少'}}</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
   <view class="empty-state" wx:if="{{dishes.length === 0 && !loading}}">
-    <image class="empty-image" src="/images/order-empty.gif" mode="aspectFit"></image>
-    <text class="empty-title">菜品库还是空的</text>
-    <text class="empty-desc">先去添加一些菜品吧~</text>
-    <view class="btn-primary" bindtap="goToDishes">去添加菜品</view>
+    <image class="empty-image" src="/images/dishes-empty.gif" mode="aspectFit"></image>
+    <text class="empty-title">菜品库空空如也</text>
+    <text class="empty-desc">快添加你们喜欢的菜品吧！</text>
+    <view class="btn-primary" bindtap="toAddPage">添加第一道菜</view>
   </view>
 
-  <view class="menu-container" wx:if="{{dishes.length > 0}}">
-    <scroll-view class="category-list" scroll-y scroll-with-animation scroll-into-view="{{categoryScrollId}}">
-      <view class="category-item {{currentCategory === item._id ? 'active' : ''}}"
-            wx:for="{{parentCats}}" wx:key="_id" id="catleft-{{item._id}}"
-            data-id="{{item._id}}" bindtap="selectCategory">
-        <text class="category-icon">{{item.icon}}</text>
-        <text class="category-name">{{item.name}}</text>
-        <text class="category-count" wx:if="{{selectedByCategory[item._id]}}">{{selectedByCategory[item._id]}}</text>
-      </view>
-    </scroll-view>
-
-    <scroll-view class="dish-list" scroll-y scroll-with-animation scroll-into-view="{{dishScrollId}}" bindscroll="onDishScroll">
-      <view wx:for="{{parentCats}}" wx:key="_id" wx:if="{{categoryCount[item._id] > 0}}">
-        <view class="category-header" id="parent-{{item._id}}">
-          <text class="category-header-icon">{{item.icon}}</text>
-          <text class="category-header-name">{{item.name}}</text>
+  <!-- 菜品列表 -->
+  <view class="dish-grid" wx:if="{{dishes.length > 0}}">
+    <view class="dish-card" wx:for="{{filteredDishes}}" wx:key="_id"
+          data-id="{{item._id}}" bindtap="toDetailPage" bindlongpress="showDeleteConfirm">
+      <image class="dish-card-image" wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
+      <image class="dish-card-image" wx:else src="/images/dishes-empty.gif" mode="aspectFill"></image>
+      <view class="dish-card-info">
+        <!-- 第一行：菜名 + 分类标签 + 已点次数 -->
+        <view class="card-row-1">
+          <text class="dish-card-name">{{item.name}}</text>
+          <view class="card-row-1-tags">
+            <text class="card-tag" wx:for="{{item.categoryLabels}}" wx:for-item="label" wx:key="text">{{label.text}}</text>
+            <text class="card-order-tag" wx:if="{{item.orderCount > 0}}">已点{{item.orderCount}}次</text>
+          </view>
         </view>
-        <block wx:if="{{childrenMap[item._id].length > 0}}">
-          <block wx:for="{{childrenMap[item._id]}}" wx:for-item="child" wx:key="_id">
-            <view class="subcategory-header" wx:if="{{dishesByCategory[child._id].length > 0}}">
-              <text class="subcategory-icon">{{child.icon}}</text>
-              <text class="subcategory-name">{{child.name}}</text>
-            </view>
-            <view class="dish-item {{dish.selected ? 'selected' : ''}}" wx:for="{{dishesByCategory[child._id]}}" wx:for-item="dish" wx:key="_id" data-id="{{dish._id}}" bindtap="toggleSelect">
-              <image class="dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
-              <image class="dish-image" wx:else src="/images/order-empty.gif" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
-              <view class="dish-info">
-                <text class="dish-name">{{dish.name}}</text>
-                <view class="dish-meta">
-                  <text class="dish-desc" wx:if="{{dish.description}}">"{{dish.description}}"</text>
-                  <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
-                </view>
-                <text class="dish-options-text" wx:if="{{dish.optionsText}}">{{dish.optionsText}}</text>
-              </view>
-              <view class="dish-check {{dish.selected ? 'checked' : ''}}"><text wx:if="{{dish.selected}}">✓</text></view>
-            </view>
-          </block>
-        </block>
-        <block wx:else>
-          <view class="dish-item {{dish.selected ? 'selected' : ''}}" wx:for="{{dishesByCategory[item._id]}}" wx:for-item="dish" wx:key="_id" data-id="{{dish._id}}" bindtap="toggleSelect">
-            <image class="dish-image" wx:if="{{dish.imageUrl}}" src="{{dish.imageUrl}}" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
-            <image class="dish-image" wx:else src="/images/order-empty.gif" mode="aspectFill" data-id="{{dish._id}}" catchtap="openDishDetail"></image>
-            <view class="dish-info">
-              <text class="dish-name">{{dish.name}}</text>
-              <view class="dish-meta">
-                <text class="dish-desc" wx:if="{{dish.description}}">"{{dish.description}}"</text>
-                <text class="dish-count" wx:if="{{dish.orderCount > 0}}">已点{{dish.orderCount}}次</text>
-              </view>
-              <text class="dish-options-text" wx:if="{{dish.optionsText}}">{{dish.optionsText}}</text>
-            </view>
-            <view class="dish-check {{dish.selected ? 'checked' : ''}}"><text wx:if="{{dish.selected}}">✓</text></view>
-          </view>
-        </block>
-      </view>
-      <view class="list-bottom">~ 已经到底啦 ~</view>
-    </scroll-view>
-  </view>
-
-  <view class="footer" wx:if="{{dishes.length > 0}}">
-    <view class="footer-cart" bindtap="toggleCartPanel">
-      <view class="cart-icon-wrap">
-        <image class="cart-icon-img" src="/images/cart-icon.png" mode="aspectFit"></image>
-        <text class="cart-badge" wx:if="{{selectedCount > 0}}">{{selectedCount}}</text>
-      </view>
-      <text class="cart-hint" wx:if="{{selectedCount === 0}}">请选择菜品</text>
-      <text class="cart-hint" wx:else>已选{{selectedCount}}道菜</text>
-    </view>
-    <view class="btn-order {{selectedCount > 0 ? 'active' : ''}}" bindtap="submitOrder">确认点菜</view>
-  </view>
-</view>
-
-<!-- 已选菜品面板 -->
-<view class="cart-panel-mask" wx:if="{{showCartPanel}}" bindtap="toggleCartPanel"></view>
-<view class="cart-panel {{showCartPanel ? 'show' : ''}}">
-  <view class="cart-panel-header">
-    <text class="cart-panel-title">已选菜品</text>
-    <view class="cart-clear" bindtap="clearCart" wx:if="{{selectedCount > 0}}"><text>清空</text></view>
-  </view>
-  <scroll-view class="cart-panel-list" scroll-y style="width: 100%;">
-    <view class="cart-empty" wx:if="{{selectedCount === 0}}"><text>还没有选择菜品哦~</text></view>
-    <view class="cart-item" wx:for="{{selectedDishes}}" wx:key="_id">
-      <image class="cart-item-image" wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
-      <image class="cart-item-image" wx:else src="/images/order-empty.gif" mode="aspectFill"></image>
-      <view class="cart-item-info">
-        <text class="cart-item-name">{{item.name}}</text>
-        <text class="cart-item-options" wx:if="{{item.optionsText}}">{{item.optionsText}}</text>
-      </view>
-      <view class="cart-item-remove" data-id="{{item._id}}" catchtap="removeFromCart"><text>✕</text></view>
-    </view>
-  </scroll-view>
-</view>
-
-<!-- 备注弹窗 -->
-<view class="remark-modal" wx:if="{{showRemarkModal}}" bindtap="closeRemarkModal">
-  <view class="remark-content" catchtap="preventClose">
-    <view class="remark-close" bindtap="closeRemarkModal">✕</view>
-    <text class="remark-title">添加备注</text>
-    <text class="remark-hint">给对方留句话吧~（最多100字）</text>
-    <textarea class="remark-input" placeholder="例如：今天想吃清淡点~" bindinput="onRemarkInput" value="{{remark}}"></textarea>
-    <view class="remark-counter">{{remark.length}}/100</view>
-    <view class="remark-buttons">
-      <view class="btn-skip" bindtap="skipRemark">跳过</view>
-      <view class="btn-confirm" bindtap="confirmRemark">确认</view>
-    </view>
-  </view>
-</view>
-
-<!-- 成功弹窗 -->
-<view class="success-modal" wx:if="{{showSuccess}}">
-  <view class="success-content">
-    <image class="success-image" src="/images/loading.gif" mode="aspectFit"></image>
-    <text class="success-title">点菜成功！</text>
-    <text class="success-desc">已通知{{partnerName}}啦~</text>
-    <view class="btn-primary" bindtap="closeSuccess">好的</view>
-  </view>
-</view>
-
-<!-- 菜品详情面板（含选项组） -->
-<view class="detail-panel-mask" wx:if="{{showDishDetail}}" bindtap="closeDishDetail"></view>
-<view class="detail-panel {{showDishDetail && !detailClosing ? 'show' : ''}} {{detailTranslateY > 0 ? 'dragging' : ''}}"
-      style="{{detailTranslateY > 0 ? 'transform: translateY(' + detailTranslateY + 'px)' : ''}}"
-      bindtouchstart="onDetailTouchStart" bindtouchmove="onDetailTouchMove" bindtouchend="onDetailTouchEnd">
-  <view class="detail-panel-content" wx:if="{{currentDish}}">
-    <view class="detail-image-wrapper">
-      <view class="detail-pull-hint" catchtap="closeDishDetail"><view class="pull-chevron"></view></view>
-      <image class="detail-dish-image" wx:if="{{currentDish.imageUrl}}" src="{{currentDish.imageUrl}}" mode="widthFix"></image>
-      <image class="detail-dish-image" wx:else src="/images/order-empty.gif" mode="widthFix"></image>
-    </view>
-    <view class="detail-dish-info">
-      <text class="detail-dish-name">{{currentDish.name}}</text>
-      <view class="detail-dish-meta">
-        <text class="detail-dish-count" wx:if="{{currentDish.orderCount > 0}}">已点{{currentDish.orderCount}}次</text>
-        <text class="detail-dish-desc" wx:if="{{currentDish.description}}">{{currentDish.description}}</text>
-      </view>
-    </view>
-
-    <!-- 选项组单选 -->
-    <view class="detail-options" wx:if="{{currentDish.optionGroups && currentDish.optionGroups.length > 0}}">
-      <view class="detail-option-group" wx:for="{{currentDish.optionGroups}}" wx:key="name">
-        <text class="detail-option-title">{{item.name}}</text>
-        <view class="detail-option-list">
-          <view class="detail-option-item {{tempOptions[item.name] === opt ? 'checked' : ''}}"
-                wx:for="{{item.options}}" wx:for-item="opt" wx:key="*this"
-                data-group="{{item.name}}" data-option="{{opt}}" bindtap="selectOption">
-            <view class="detail-option-radio {{tempOptions[item.name] === opt ? 'checked' : ''}}"></view>
-            <text>{{opt}}</text>
-          </view>
+        <!-- 第二行：添加者昵称 + 添加时间 -->
+        <view class="card-row-2">
+          <text class="card-creator">{{item.creatorNickname}}</text>
+          <text class="card-time">{{item.createTimeText}}</text>
         </view>
       </view>
     </view>
-
-    <view class="detail-action">
-      <view class="btn-detail-toggle {{currentDish.selected ? 'remove' : 'add'}}" bindtap="toggleDishInDetail">
-        <text>{{currentDish.selected ? '移出菜单' : '加入菜单'}}</text>
-      </view>
+  </view>
+  
+  <!-- 底部：筛选/搜索激活时始终显示结果统计；普通模式下只在全部加载完后显示 -->
+  <view class="no-more" wx:if="{{filteredDishes.length > 0 && (isFilterActive || (!hasMore && allDishes.length > 0))}}">
+    <text class="no-more-text">~ 已经到底啦 ~</text>
+    <text class="total-count" wx:if="{{isFilterActive}}">找到 {{filteredDishes.length}} 个菜品</text>
+    <text class="total-count" wx:else>共计 {{filteredDishes.length}} 个菜品</text>
+    <view class="dishes-bottom-blessing">
+      <image class="bottom-mascot" src="/images/mascot.gif" mode="aspectFit"></image>
+      <text class="bottom-text">一二布布祝你们用餐愉快 ~</text>
     </view>
   </view>
-</view>
 
+  <!-- 加载更多：筛选/搜索激活时隐藏（已加载全量数据，无需分页） -->
+  <view class="load-more" wx:if="{{hasMore && !loading && allDishes.length > 0 && !isFilterActive}}" bindtap="loadMore">
+    <text>加载更多</text>
+  </view>
+  
+  <view class="no-result" wx:if="{{dishes.length > 0 && filteredDishes.length === 0}}">
+    <text class="no-result-text">没有找到符合条件的菜品</text>
+  </view>
+
+  <view class="fab" bindtap="toAddPage"><text class="fab-text">+</text></view>
+</view>
 <bind-guard />
